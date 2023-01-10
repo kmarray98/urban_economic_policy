@@ -67,7 +67,7 @@ INSTITUTION_URL = "https://www.vu.nl"
 TERM = "Block 4 2023"
 
 # ╔═╡ a31d893d-2cde-4228-a506-6af013fe1f3e
-LOGO_FILE = "julia-logo.svg"
+LOGO_FILE = "vu_logo.svg"
 
 # ╔═╡ dbb5e02a-2485-4ada-98d1-cc24fd6fc418
 md"""
