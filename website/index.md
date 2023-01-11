@@ -6,9 +6,9 @@ You can use this website two ways.
 
 ## Way 1) - with Julia
 
-This website and all the models are written in the Julia programming language. So the first way to run the models interactively is to install Julia and then run the notebooks locally. Julia is a fantastic programming language, so I recommend that you do it this way, but you do not have to. To install Julia, go to [the download page](https://julialang.org/downloads/), and follow the download instructions for your OS. Once you have downloaded Julia, you need to install the packages
-at the top of the script. To install these open the command prompt, type 'julia' and press enter. That will open a Julia script. Click backspace to get to
-the package manager. Then write `add' followed by the name of each package separated by a comma. You need to install the package 'Pluto'. Next, open the page, click run in the top right corner, and select run locally. Then, follow the instructions there.
+This website and all the models are written in the Julia programming language. So the first way to run the models interactively is to install Julia and then run the notebooks locally. Julia is a fantastic programming language, so I recommend that you do it this way, but you do not have to. To install Julia, go to [the download page](https://julialang.org/downloads), and follow the download instructions for your OS. Once you have downloaded Julia, you need to install the packages
+at the top of the script. To install these open the command prompt, type julia and press enter. That will open a Julia script. Click backspace to get to
+the package manager. Then write 'add' followed by the name of each package separated by a comma. You need to install the package Pluto. Next, open the page, click run in the top right corner, and select run locally. Then, follow the instructions there.
 
 ## Way 2) - on the cloud
 
