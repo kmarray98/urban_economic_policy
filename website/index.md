@@ -1,6 +1,6 @@
 # Urban economic challenges and policies
 
-Here we present the materials from the TAs and simulations of the models from the course as interactive notebooks. You can use these to explore the models.
+Here we present the materials from the TAs and simulations of the models from the 2023 course material in interactive notebooks. You can use these to explore the models. The course is part of the Msc Spatial, Transport, and Environmental Economics at School of Business and Economics, VU Amsterdam.
 
 For general course material, see the Canvas page.
 
