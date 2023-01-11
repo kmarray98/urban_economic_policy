@@ -2,6 +2,18 @@
 
 Here we present the materials from the TAs and simulations of the models from the 2023 course material in interactive notebooks. You can use these to explore the models. The course is part of the Msc Spatial, Transport, and Environmental Economics at School of Business and Economics, VU Amsterdam.
 
+You can use this website two ways.
+
+## Way 1) - with Julia
+
+The first way to run the interactive figures is to install the programming language Julia and then run the notebooks locally. To install Julia, go to [the download page](https://julialang.org/downloads/), and follow the download instructions for your OS. Once you have downloaded Julia, you need to install the packages
+at the top of the script. To install these open the command prompt, type `julia' and press enter. That will open a Julia script. Click backspace to get to
+the package manager. Then write `add' followed by the name of each package separated by a comma. 
+
+## Way 2) - without Julia with Binder
+
+The second way is to run this in the browser. This is a bit slow, but works without having to install Julia. To do this, click `run' in the top right corner of the notebook and then select the `Binder' option. It will take a few minutes to load (you will see a progress bar at the top of the screen). After loading, you should be able to alter parameters in the site. 
+
 For general course material, see the Canvas page.
 
 > **Acknowledgement** \\
