@@ -8,9 +8,9 @@ You can use this website two ways.
 
 The first way to run the interactive figures is to install the programming language Julia and then run the notebooks locally. To install Julia, go to [the download page](https://julialang.org/downloads/), and follow the download instructions for your OS. Once you have downloaded Julia, you need to install the packages
 at the top of the script. To install these open the command prompt, type `julia' and press enter. That will open a Julia script. Click backspace to get to
-the package manager. Then write `add' followed by the name of each package separated by a comma. 
+the package manager. Then write `add' followed by the name of each package separated by a comma. You need to install the package `Pluto'. Next, open the page, click run in the top right corner, and select run locally. Then, follow the instructions there.
 
-## Way 2) - without Julia with Binder
+## Way 2) - on the cloud
 
 The second way is to run this in the browser. This is a bit slow, but works without having to install Julia. To do this, click `run' in the top right corner of the notebook and then select the `Binder' option. It will take a few minutes to load (you will see a progress bar at the top of the screen). After loading, you should be able to alter parameters in the site. 
 
