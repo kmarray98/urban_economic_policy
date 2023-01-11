@@ -219,7 +219,8 @@ end
 
 # ╔═╡ 3e93e57c-3660-416f-9874-d43abf99e60e
 INSTRUCTORS = [
-	(name = "Kieran Marray", url = "https://www.kmarray98.github.io"")
+	(name = "Kieran Marray", url = "https://www.kmarray98.github.io")
+		
 ] |> instructors
 
 # ╔═╡ d78c58e5-3ecb-45ee-972e-20fc90ece3cc
