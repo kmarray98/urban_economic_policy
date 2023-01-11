@@ -104,10 +104,7 @@ show_section_number = false
 
 # ╔═╡ 01a2336a-5c04-4d5a-bb0b-a9c704517dbf
 pages = [
-	(page = "/logistics/", title = "Class Logistics"),
-	(page = "/syllabus/", title = "Syllabus"),
-	(page = "/installation/", title = "Software installation"),
-	(page = "/cheatsheets/", title = "Cheatsheets")
+	(page = "/logistics/", title = "Class Logistics")
 ]
 
 # ╔═╡ c0768146-5ea0-4736-94f8-2c1a2affa922
