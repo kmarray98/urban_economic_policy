@@ -15,5 +15,35 @@
                 "preview_image_url": ""
             }
         ]
+    },
+	
+    {
+        "title": "Hedonic pricing",
+        "contents": [
+            {
+                "name": "Rosen (1974)",
+                "notebook_path": "notebooks/1_rosen.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            }
+        ]
+    },	
+	
+    {
+        "title": "Place-based policies",
+        "contents": [
+            {
+                "name": "Rossi-Hanberg et al. (2010)",
+                "notebook_path": "notebooks/2_rossi_hanberg.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            },
+	   {
+                "name": "Kline and Moretti (2014)",
+                "notebook_path": "notebooks/2_Kline.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            }
+        ]
     }
 ]
