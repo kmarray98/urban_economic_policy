@@ -139,9 +139,9 @@ md" For example, if we have $u(x,y) = α\ln{x} + \ln{y}$, and $\omega = 1$, we h
 
 # ╔═╡ 263c88e1-611d-4a85-ae44-217969c2b3fa
 begin
-	px_slide = @bind px Slider(0.01:0.1:10.0, 1.0, true)
-	py_slide = @bind py Slider(0.01:0.1:10.0, 0.1, true)
-	omega_slide = @bind omega Slider(0.0:0.1:100.0, 1.0, true)
+	px_slide = @bind p_x Slider(0.01:0.1:10.0, 1.0, true)
+	py_slide = @bind p_y Slider(0.01:0.1:10.0, 1.0, true)
+	omega_slide = @bind omega Slider(0.0:0.1:100.0, 10.0, true)
 
 	md"Variables: \
 	price of x: $(px_slide) \
@@ -160,8 +160,9 @@ begin
 
 	x = collect(0.1:0.1:omega)
 	#px .* x
-	y = (omega .- px .* x) ./ py
-	plot(y, x, lims = (0, omega), lw=2,
+	y = (omega .- p_x .* x) ./ p_y
+	Print(p_y)
+	plot(x,y, lims = (0, omega), lw=2,
 	label="Budget")
 
 	
@@ -172,7 +173,7 @@ md" and **indifference curves** that look like"
 
 # ╔═╡ e5e56e93-0845-4ea3-a7f1-3cf693d87ad2
 begin
-	u_slide = @bind u Slider(0.01:0.1:15.0, 1.0, true)
+	u_slide = @bind u Slider(0.01:0.1:15.0, 4.0, true)
 	α_slide = @bind α Slider(0.01:0.1:2.0, 1.0, true)
 	md"Utility: $(u_slide) \
 	alpha: $(α_slide)"
@@ -181,7 +182,7 @@ end
 # ╔═╡ 761920ec-fa4e-4272-b88d-42c196ff0232
 begin
 	util = exp.(u .- α .* log.(x))
-	plot(util, x, lims = (0, 100),
+	plot(x, util, lims = (0, 25),
 	label="Indifference curve", linecolor=:red, lw=2)
 end
 
@@ -193,8 +194,8 @@ begin
 
 	# indifference curves
 
-	y_max = omega /(py + α * py)
-	x_max = (α*omega) /(py + α * py)
+	y_max = omega /(p_y + α * p_y)
+	x_max = (α*omega) /(p_y + α * p_y)
 	u_max = α * log(x_max) + log(y_max)
 
 	util_max = exp.(u_max .- α .* log.(x))
@@ -202,9 +203,9 @@ begin
 	# now we need to plot the right indifference curve
 
 	
-	plot(y, x, lims = (0, omega),
+	plot(x,y, lims = (0, omega),
 	label="Budget", lw=2)
-    plot!(util_max, x,
+    plot!(x, util_max,
 	label="Indifference curve", lw=2, linecolor=:red)
 end
 
@@ -355,7 +356,7 @@ md" In this model, any price or quantity restriction decreases welfare by causin
 
 # ╔═╡ 6645b31f-2452-4ec2-9a46-73bb777b3c38
 begin
-	p_control_slide = @bind p_control Slider(0.1:0.1:50.0, 50.0, true)
+	p_control_slide = @bind p_control Slider(0.1:0.1:50.0, 40.0, true)
 
 	md"Price control \
 	$(p_control_slide)  "
@@ -427,21 +428,21 @@ end
 begin
    omega_x  =50
 # we will plot both Alice and Bob's indifference curves and their budget constraints given the supporting price vector here
-	p_x = 1 # let x be numeraire
+	p_x_gen = 1 # let x be numeraire
 
-	p_y = ((omega_x_B /(1-gamma_B)) + (omega_x_A /(1-beta_A)))/(((beta_A * omega_y_A)/(1-beta_A)) + ((gamma_B * omega_y_B)/(1-gamma_B))) * p_x
+	p_y_gen = ((omega_x_B /(1-gamma_B)) + (omega_x_A /(1-beta_A)))/(((beta_A * omega_y_A)/(1-beta_A)) + ((gamma_B * omega_y_B)/(1-gamma_B))) * p_x_gen
 
 	# first, we need to compute the allocation given prices and endowments
-	y_A =(omega_x_A * p_x + omega_y_A * p_y)/(p_y * (1+beta_A))
-	x_A = (p_y * y_A * beta_A)/p_x
-	y_B = (omega_x_B * p_x + omega_y_B * p_y)/(p_y * (1+gamma_B))
-	x_B = (p_y * y_B * gamma_B)/p_x
+	y_A =(omega_x_A * p_x_gen + omega_y_A * p_y_gen)/(p_y_gen * (1+beta_A))
+	x_A = (p_y_gen * y_A * beta_A)/p_x_gen
+	y_B = (omega_x_B * p_x_gen + omega_y_B * p_y_gen)/(p_y_gen * (1+gamma_B))
+	x_B = (p_y_gen * y_B * gamma_B)/p_x_gen
 
 	# now plotting indifference curve and budget line for Alice
 
 	poss_x_A = collect(0.1:0.1:(omega_x_A + omega_x_B+ omega_y_A + omega_y_B ))
 	#px .* x
-	poss_y_A = (omega_x_A .* p_x .+ omega_y_A .* p_y .- p_x .* poss_x_A) ./ p_y
+	poss_y_A = (omega_x_A .* p_x_gen .+ omega_y_A .* p_y_gen .- p_x_gen .* poss_x_A) ./ p_y_gen
 
 	u_max_A = beta_A * log(x_A) + log(y_A)
 	util_max_A = exp.(u_max_A .- beta_A .* log.(poss_x_A))
@@ -450,7 +451,7 @@ begin
 
 	poss_x_B = collect(0.1:0.1:(omega_x_A + omega_x_B + omega_y_A + omega_y_B ))
 	#px .* x
-	poss_y_B = (omega_x_B .* p_x .+ omega_y_B .* p_y .- p_x .* poss_x_B) ./ p_y
+	poss_y_B = (omega_x_B .* p_x_gen .+ omega_y_B .* p_y_gen .- p_x_gen .* poss_x_B) ./ p_y_gen
 
 	u_max_B = gamma_B * log(x_B) + log(y_B)
 	util_max_B = exp.(u_max_B .- gamma_B .* log.(poss_x_B))
@@ -469,7 +470,7 @@ end
 
 # ╔═╡ 82bfe529-6967-4461-af60-1bba8aa6a2f7
 begin
-	Print("For px = 1, optimal py is: " * string(p_y))
+	Print("For px = 1, optimal py is: " * string(p_y_gen))
 end
 
 # ╔═╡ fa749020-2746-472e-b285-32690fca9540
@@ -1486,7 +1487,7 @@ version = "1.4.1+0"
 # ╟─4529bcf4-1261-46fc-901d-ef493c6fb1a6
 # ╟─a9da5e0e-104b-491f-89e8-7b9b05bc2538
 # ╟─5f802a93-e655-497b-b23e-01489b81a5aa
-# ╠═e5e56e93-0845-4ea3-a7f1-3cf693d87ad2
+# ╟─e5e56e93-0845-4ea3-a7f1-3cf693d87ad2
 # ╟─761920ec-fa4e-4272-b88d-42c196ff0232
 # ╟─18e547be-09fa-4703-8129-e0dd42ad8a20
 # ╟─023d74eb-3d14-402f-88a2-194592c77a1c
