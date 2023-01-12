@@ -26,6 +26,7 @@ TableOfContents()
 # ╔═╡ 66765dfc-7cc3-43af-a282-08dcc08e15a9
 md" Here, we cover concepts in econometrics that are useful for the course. We go through each quickly, as you should have seen these concepts before. We cover
 
++ data preparation,
 + estimation strategies (parametric vs. semi-parametric vs. non-parametric, structural vs. reduced-form)
 + estimation methods,
 + causal inference, and
@@ -84,10 +85,72 @@ begin
 	
 end
 
+# ╔═╡ 7e4e549c-ce8d-47c6-ab82-bf0d570dcacb
+md"## Preparing your data"
+
+# ╔═╡ c824a69f-637a-4b61-acee-e91410ac4f63
+md" **Before you start doing any estimation**, there are two things you need to think about.
+
++ What **specific** question do you want to answer.
++ Is the data that you have **error-free** and **appropriate to answer your specific question**.
+
+To guide you in doing this, the first thing you should do in any analysis is **plot your data**. You should plot a **histogram of each of the main variables you care about** and a **scatterplot of the main variables you think are related**. 
+"
+
+# ╔═╡ 46ec542c-de39-42cd-929f-dccccc2c462d
+md"The first will show you if the data is in units that you did not realise (e.g logs) or will reveal data entry errors that would mess up your estimates. In extreme cases, [it can also reveal fraud](https://datacolada.org/98). For example, if someone accidentally switched the units on some of the house price quality data I generated above, the basic histogram would look like this."
+
+# ╔═╡ e5a98d77-a512-4c58-8ca4-4dc384971df2
+begin
+   X_error = copy(X)
+	X_error[50:300] = X_error[50:300] .* 1000
+	histogram(X_error, label="")
+	
+end
+
+# ╔═╡ 73ee62a1-de4e-40b8-8d62-56bb07e292e8
+md" From how the variable is defined, I know the top observation should be around 4 so the histogram should look more like this."
+
+# ╔═╡ eae896fe-c1c8-4ae2-a896-0641f472d6be
+histogram(X, label="")
+
+# ╔═╡ a54e2053-fb8f-4c20-acfb-8043aaa3c416
+md" The difference between what I see and what I expect tells me that something is wrong, so I should look more carefully at the data to find any coding errors etc, or check if I have misunderstood it.
+
+The second shows you if the relationship you want to estimate is actually there. If our price data and quality data is related, we should see a relatively clear trend in the data like the first scatterplot above. If instead we see something like this"
+
+# ╔═╡ 69ac43a3-54dc-412b-9595-64abeb80c567
+begin
+
+	Y_error = rand(rng, d_price, 10000)
+	scatter(X, Y_error, label="")
+end
+
+# ╔═╡ a9f50d52-fda7-4bb3-9104-9901eb75b257
+md" then maybe our variables are not actually be related and we need to think about another research question."
+
+# ╔═╡ 3b853bc9-e9a5-4b59-ba83-976a3ddd4fd1
+md" When we make histograms, we might see a few extreme data points (what people often refer to as **outliers**). This is especially true if we are dealing with a variable that is very skewed like house prices e.g"
+
+# ╔═╡ 19f8ca7e-97b1-44e2-87d4-a269d2597675
+histogram(log.(Y), label="Log house prices")
+
+# ╔═╡ e34fe2b8-fe93-470c-bb40-23777f6d761a
+md"Extreme observations might drive the results of our parameter estimates. So, what we do depends on our specific question. Do we care about the effect of quality on house prices in general, including mansions? Or do we care about the effect of quality on 'normal' house prices, excluding mansions? If we care about the second, we might want to **drop the top observations** so our estimates reflect the trend in most of the data. This is called **censoring** our data. If we censor the house price data above to exclude prices greater than 1,000,000 and then plot in logs, we get something less skewed."
+
+# ╔═╡ 64309bbb-3c2e-4e1a-b1de-5b7626cd9b31
+begin
+	Y_censored = Y[Y .< 1000000]
+    histogram(log.(Y_censored), label="Log house prices")
+end
+
+# ╔═╡ fab276f4-4067-4c2b-916f-98d5278ffd9d
+md" Whatever you do, **justify your choices!** **Do not arbitrarily delete data points**! If you think the person who created the data has entered a point incorrectly, you should be able to provide a convincing reason why you think this. If you want to censor your data, you should be explicit about which individuals your results then apply to."
+
 # ╔═╡ 94d0747f-be6f-4055-8def-1914a02a95c5
 md" ## Estimation strategies
 
-First, we need to pick a way that we will estimate parameters. Which we pick depends on how much prior information we have about our true **data generating process**, and how confident we are that this prior information is correct. We face a fundamental trade-off. The more prior information we include, the more efficient our estimator of the parameters will be. But if our prior information is incorrect, our estimates will also be incorrect. This splits into two related choices: what type of statistical model to use, and how much economic theory to use in our model."
+Once we have our cleaned data and know what question we want to answer, we need to pick a way that we will estimate parameters. Which we pick depends on how much prior information we have about our true **data generating process**, and how confident we are that this prior information is correct. We face a fundamental trade-off. The more prior information we include, the more efficient our estimator of the parameters will be. But if our prior information is incorrect, our estimates will also be incorrect. This splits into two related choices: what type of statistical model to use, and how much economic theory to use in our model."
 
 # ╔═╡ e8612d42-aa11-43fa-ae67-24fca5c21a11
 md" ### Types of statistical model"
@@ -103,7 +166,7 @@ md" To estimate a parameter $\beta$, we typically fit some kind of model $f(x, \
 md" ### Types of economic model
 We might also have some model from economic theory that gives us a specific form of $f()$. There are two ways of using the theory to estimate parameters.
 + **Structural estimation** takes the form of $f()$ given by our economic theory and fit it to data.
-+ **Reduced form estimation** uses the form of $f()$ given by the theory to motivate the choice of variables in a simpler $f()$ e.g a linear regression, that we then fit to data.
++ **Reduced form estimation** uses the form of $f()$ given by the theory to motivate the choice of variables in a simpler $f()$, e.g a linear regression, that we then fit to data.
 
 Structural estimation gives us a more accurate parameter estimates if the structure given by economic theory accurately describes the world. But it typically involves making quite strong assumptions on people's expectations, preferences etc that we need to solve the economic model. We might be sceptical of these assumptions. Reduced form estimation might give less correct parameter estimates if the true structure is very non-linear, but it allows us to describe the data without making these assumptions.
 "
@@ -379,7 +442,7 @@ end
 md" which is very wrong."
 
 # ╔═╡ 235dac45-c8a0-4f32-aa11-f9f6d5b629c7
-md" ### 1) Randomisation 
+md" ### Randomisation 
 The first, and simplest, way to remove selection bias is to randomise individuals to treatment and control groups. Then, 
 
 ``` math
@@ -409,7 +472,7 @@ end
 
 
 # ╔═╡ a72e5d33-0a1f-4a79-b855-79197f4613cb
-md" which is a lot better"
+md" which is a lot better. But, randomisation is not always possible. So we need other tools."
 
 # ╔═╡ 57fa9569-9089-4ef4-bc2b-ecbd8c964a44
 md" ### 2) Natural experiments
@@ -1814,11 +1877,25 @@ version = "1.4.1+0"
 # ╟─f5450eab-0f9f-4b7f-9b80-992d3c553ba9
 # ╟─561b4e30-2916-47c5-ae90-1c2396343366
 # ╠═ff95d6a8-e56b-48c9-9d64-61a134e6effc
-# ╟─d4dd4e40-8130-11ed-1d7f-1f21a70ab743
+# ╠═d4dd4e40-8130-11ed-1d7f-1f21a70ab743
 # ╟─66765dfc-7cc3-43af-a282-08dcc08e15a9
 # ╟─98e0a048-1a7e-4242-b2a5-982d273d6e87
 # ╟─a1595bed-ecf7-4042-bff6-b63fd4fd351f
 # ╟─dcb102b5-1cef-48e4-a3b6-53f70a33ecf1
+# ╟─7e4e549c-ce8d-47c6-ab82-bf0d570dcacb
+# ╟─c824a69f-637a-4b61-acee-e91410ac4f63
+# ╟─46ec542c-de39-42cd-929f-dccccc2c462d
+# ╟─e5a98d77-a512-4c58-8ca4-4dc384971df2
+# ╟─73ee62a1-de4e-40b8-8d62-56bb07e292e8
+# ╟─eae896fe-c1c8-4ae2-a896-0641f472d6be
+# ╟─a54e2053-fb8f-4c20-acfb-8043aaa3c416
+# ╟─69ac43a3-54dc-412b-9595-64abeb80c567
+# ╟─a9f50d52-fda7-4bb3-9104-9901eb75b257
+# ╟─3b853bc9-e9a5-4b59-ba83-976a3ddd4fd1
+# ╟─19f8ca7e-97b1-44e2-87d4-a269d2597675
+# ╟─e34fe2b8-fe93-470c-bb40-23777f6d761a
+# ╟─64309bbb-3c2e-4e1a-b1de-5b7626cd9b31
+# ╟─fab276f4-4067-4c2b-916f-98d5278ffd9d
 # ╟─94d0747f-be6f-4055-8def-1914a02a95c5
 # ╟─e8612d42-aa11-43fa-ae67-24fca5c21a11
 # ╟─8364256f-0a18-4dc1-997c-142a8fc93f34
@@ -1844,7 +1921,7 @@ version = "1.4.1+0"
 # ╟─c7d7aeb1-ab48-4985-a7ae-efd6385f5db2
 # ╟─cc022b3e-4bd5-4ac9-91fc-c833625fc6d4
 # ╟─0fafd79e-fd1f-4639-b9d2-f74ded42b54b
-# ╠═20f67f15-ec5b-4f31-ba26-553ff06d56be
+# ╟─20f67f15-ec5b-4f31-ba26-553ff06d56be
 # ╟─2cdde6b5-05c9-4511-bbbd-054fd0bb2d9f
 # ╟─330a3993-e057-45b2-9836-711032a86db2
 # ╟─4e5f42e6-d1d0-4233-8f41-a339db0c0be4
@@ -1853,10 +1930,10 @@ version = "1.4.1+0"
 # ╟─77988813-3b5c-4757-bbae-d79a37f6623e
 # ╟─a72e5d33-0a1f-4a79-b855-79197f4613cb
 # ╟─57fa9569-9089-4ef4-bc2b-ecbd8c964a44
-# ╠═ba4ba6a6-d473-4a71-9c91-312b2e75bfa5
+# ╟─ba4ba6a6-d473-4a71-9c91-312b2e75bfa5
 # ╟─2b5ad567-1ce2-4716-a8e8-b22c1f559bf2
 # ╟─37cba339-e070-4e23-ac0b-ac2eeff51279
-# ╠═971a83cc-0348-48ce-97c8-23620440e942
+# ╟─971a83cc-0348-48ce-97c8-23620440e942
 # ╟─62181f51-71eb-4fe7-94f4-1618b00c362a
 # ╟─e1225785-a96f-4668-b142-e17edc0f20bf
 # ╟─9a46c416-6fc1-4bca-a347-f7ff68742ca4
