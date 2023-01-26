@@ -30,7 +30,7 @@ md" Here, we cover concepts in econometrics that are useful for the course. We g
 + estimation strategies (parametric vs. semi-parametric vs. non-parametric, structural vs. reduced-form)
 + estimation methods,
 + causal inference, and
-+ ordinal data.
++ discrete choice models.
 
 If you do not know about estimators, testing, or the general idea of statistical inference, we detail these briefly in the appendix.
 
@@ -86,7 +86,7 @@ begin
 end
 
 # ╔═╡ 7e4e549c-ce8d-47c6-ab82-bf0d570dcacb
-md"## Preparing your data"
+md"### Preparing your data"
 
 # ╔═╡ c824a69f-637a-4b61-acee-e91410ac4f63
 md" **Before you start doing any estimation**, there are two things you need to think about.
@@ -148,12 +148,12 @@ end
 md" Whatever you do, **justify your choices!** **Do not arbitrarily delete data points**! If you think the person who created the data has entered a point incorrectly, you should be able to provide a convincing reason why you think this. If you want to censor your data, you should be explicit about which individuals your results then apply to."
 
 # ╔═╡ 94d0747f-be6f-4055-8def-1914a02a95c5
-md" ## Estimation strategies
+md" ### Estimation strategies
 
 Once we have our cleaned data and know what question we want to answer, we need to pick a way that we will estimate parameters. Which we pick depends on how much prior information we have about our true **data generating process**, and how confident we are that this prior information is correct. We face a fundamental trade-off. The more prior information we include, the more efficient our estimator of the parameters will be. But if our prior information is incorrect, our estimates will also be incorrect. This splits into two related choices: what type of statistical model to use, and how much economic theory to use in our model."
 
 # ╔═╡ e8612d42-aa11-43fa-ae67-24fca5c21a11
-md" ### Types of statistical model"
+md" ##### Types of statistical model"
 
 # ╔═╡ 8364256f-0a18-4dc1-997c-142a8fc93f34
 md" To estimate a parameter $\beta$, we typically fit some kind of model $f(x, \beta, \epsilon)$ where $\epsilon$ is our error term that takes some distribution. Our estimation strategy depends on how much prior knowledge we are willing to assume we have.
@@ -165,17 +165,17 @@ md" To estimate a parameter $\beta$, we typically fit some kind of model $f(x, \
 # ╔═╡ 803df173-04c2-491a-8450-361ea126be8e
 md" ### Types of economic model
 We might also have some model from economic theory that gives us a specific form of $f()$. There are two ways of using the theory to estimate parameters.
-+ **Structural estimation** takes the form of $f()$ given by our economic theory and fit it to data.
-+ **Reduced form estimation** uses the form of $f()$ given by the theory to motivate the choice of variables in a simpler $f()$, e.g a linear regression, that we then fit to data.
++ In **structural estimation** we ususally take a system of interlocking equations that describe the steady-state equilibrium behaviour of a theoretical model and fit it directly to data. An example you might have seen is a real business cycle model. 
++ In **reduced form estimation** we usually fit one equation that is simpler than the theoretical model (normally a linear regression model). Theory motivates the choice of variables but not the form of the equation.
 
-Structural estimation gives us a more accurate parameter estimates if the structure given by economic theory accurately describes the world. But it typically involves making quite strong assumptions on people's expectations, preferences etc that we need to solve the economic model. We might be sceptical of these assumptions. Reduced form estimation might give less correct parameter estimates if the true structure is very non-linear, but it allows us to describe the data without making these assumptions.
+Structural estimation gives us a more accurate parameter estimates if the structure given by economic theory accurately describes the world. But it typically involves making quite strong assumptions on people's expectations, preferences etc that we need to solve the economic model. We might be sceptical of these assumptions. The less structure you add, the more you might worry about biases from endogeneity due to the stuff you leave out. Reduced form estimation might give less correct parameter estimates if the true structure is very non-linear, but it allows us to describe the data without making these assumptions.
 "
 
 # ╔═╡ 2f0d6238-7e3b-4669-9d7e-72a2994456dc
-md" ## Common estimators"
+md" ### Common estimators"
 
 # ╔═╡ bf4a7cbb-3778-4557-94ec-9fdf382a330d
-md" ### Least-squares "
+md" ##### Least-squares estimation"
 
 # ╔═╡ 7d1a97f7-d1b0-43b4-8f93-68d89e9b0ce7
 md" We typically use a **regression** model -- estimating the conditional mean of our dependent variable given some independent variables as a function of the independent variables. We estimate the conditional mean based on some **loss function**, which tells us how much we care about different errors the model could make. 
@@ -264,7 +264,7 @@ Print("Parameters in first model are: alpha = " * string(params_1[1]) * ", and b
 Print("Parameters in second model are: alpha = " * string(params_2[1]) * ", beta =  " *  string(params_2[2]) * ", and gamma = " * string(params_2[3]))
 
 # ╔═╡ b16801b2-0e2b-44ba-922e-3653a0baef70
-md" ### Maximum-likelihood "
+md" ##### Maximum-likelihood estimation "
 
 # ╔═╡ 6f261bf9-dee9-4a0a-91b7-e6b1adf484fd
 md" Instead of specifying a fixed loss function, we can specify a probability density function for our data. For example, assume that our data comes from a normal (Gaussian) distribtuion. Then the probability density $g(y)$ is
@@ -280,42 +280,32 @@ With a model for $\mu$, we can then estimate $\beta$ by maximising the product o
 ```
 Each density represents how likely each observed data point is given the data, so if each parameter and the model are correct, the data points should be very likely. The product is called the **likelihood**, so this method is called **maximum-likelihood**. If the likelihood is correct, maximum likelihood is the most efficient method.
 
-Maximum likelihood with a normal distribution is equivalent to least-squares estimation.
+Maximum likelihood with a normal distribution is equivalent to least-squares estimation. In this course, we use maximum-likelihood estimation to fit discrete choice models. Let individuals choose from M options. We can naturally describe the data with the **multinomial likelihood**
+
+
+```math
+ L(y|x, \beta) := \prod_{i=1}^{N}\prod_{j=1}^{M}p_{ij}(x_{i}, \beta)^{y_{ij}}
+```
+
+where $y_{ij} = 1$ if and only if individual $i$ chooses option $j$, else $0$. Then the log likelihood has the form
+
+```math
+l(y|x, \beta) = \sum_{i=1}^{N}\sum_{j=1}^{M}y_{ij}\ln{p_{ij}(x_{i}, \beta)}
+```
+
+which is flexible, easy to compute, and easy to maximise.
+
 "
 
-# ╔═╡ d609e18a-6508-4867-86ab-b45691d92f41
-md" ### Methods of moments"
-
-# ╔═╡ 57a4e042-8aac-4f5c-a668-8a8060403b51
-md" Instead of using a loss function or specifying a likelihood, we might specify some facts based on summary statistics of the data that must be true in the population at the true parameter values. These facts are called **population moments**. An example is that the conditional expectation of the errors should be $0$ i.e
-
-```math
-E(y-\beta x|x) = 0.
-```
-
-We can then fit a model by constructing the **sample analogue** of the population moment conditions i.e in our example the mean error
-
-```math
-\sum_{i=1}^{N}(y_{i}-\beta x_{i}|x_{i})
-```
-
-and then picking our parameters to **minimise the distance of the sample analogues from the population moment condition**. Typically we have more moment conditions than parameters. So if we stack our moment conditions in a vector $G$, weight them using a weight matrix $W$, and use squared distance, we can write
-
-```math
-\hat{\beta} = \text{arg\_min}G(\beta, x)'WG(\beta, x).
-```
-
-Our estimator is called the **generalised method of moments** estimator."
-
 # ╔═╡ 03c57489-3b0e-436d-8e8b-24393c640a2a
-md" ### Non-parametric regression
+md" ##### Non-parametric estimation
 We might instead try to estimate a potentially non-linear conditional mean
 
 ```math
 E(y|x) = m(x)
 ```
 
-where $m()$ is some unknown, potentially very complicated, function.
+where $m()$ is some unknown, potentially very complicated, function without placing lots of explicit structure on $m()$.
 
 A standard way of doing this is a **locally weighted regression**. Here, we estimate the conditional mean function at some point in the data as a **weighted average of the across the whole dataset** where the **weights decrease the further we go from our current point**. 
 
@@ -323,7 +313,9 @@ A standard way of doing this is a **locally weighted regression**. Here, we esti
 \bar{y} = \frac{\sum_{i=1}^{m}w_{i}(x_{i}, h)y_{i}}{\sum_{i=1}^{m}w_{i}(x_{i},h)}.
 ```
 
-The weighting function is a function of $x$ and typically the **kernel** of some probability density. So we only use data that is 'close' to the point we care about, and use the data more the 'closer' it is. The parameter `h' is the **bandwidth**, and determines the points we look at. The simplest example is **k-nearest neighbours**
+We are assuming that the mean of the data around a point accurately represents the conditional expectation of the data generating process around that point on the function.
+
+The weighting function is a function of $x$ and typically the **kernel** of some probability density. So we only use data that is 'close' to the point we care about, and use the data more the 'closer' it is. The parameter ''h' is the **bandwidth**, and determines the number of points we look at around the point we care about (think of a 'band' or sliding window moving through the data). The simplest example is **k-nearest neighbours**
 
 ```math
 w_{i}(k) = \frac{1}{k+1} \text{ for j in} \{i-\frac{k}{2}\,..., i+\frac{k}{2}\}, 
@@ -336,7 +328,7 @@ i.e the average of the k nearest neighbours to the point.
 # ╔═╡ 393f8fa0-a9f5-4dc6-b54f-f460b709ddb1
 begin
     h_slide = @bind h Slider(2:2:200, 6, true)
-	md"h: $(h_slide)
+	md"k: $(h_slide)
 	"
 end
 
@@ -367,7 +359,7 @@ begin
 end
 
 # ╔═╡ 75a0e831-e61a-4637-ba78-c6b32fe2db96
-md" ## Casual inference"
+md" ### Causal inference"
 
 # ╔═╡ c7d7aeb1-ab48-4985-a7ae-efd6385f5db2
 md"We often want to measure the effect that some intervention has on an outcome that we care about. Thus, we want to estimate the **causal effect** of the intervention on our outcome. To do this, we should first quickly define what we mean by a causal effect. Econometricians typically use a **counterfactual account of causality** - roughly that $x$ causes $y$ if and only if if $x$ had not occurred, $y$ would not have occurred (other definitions are possible, e.g see [here](https://plato.stanford.edu/entries/causal-models/)).
@@ -439,10 +431,10 @@ begin
 end
 
 # ╔═╡ 4e5f42e6-d1d0-4233-8f41-a339db0c0be4
-md" which is very wrong."
+md" which is very wrong. The way our treatment is determined generates selection bias."
 
 # ╔═╡ 235dac45-c8a0-4f32-aa11-f9f6d5b629c7
-md" ### Randomisation 
+md" ##### Randomisation 
 The first, and simplest, way to remove selection bias is to randomise individuals to treatment and control groups. Then, 
 
 ``` math
@@ -475,7 +467,7 @@ end
 md" which is a lot better. But, randomisation is not always possible. So we need other tools."
 
 # ╔═╡ 57fa9569-9089-4ef4-bc2b-ecbd8c964a44
-md" ### 2) Natural experiments
+md" ##### 2) Natural experiments
 The second, most common, way to remove selection bias is to exploit some **natural experiment** where some quirk in policy or nature does the randomisation for you. Then, we compare the differences of individuals in one groups in the natural experiment versus the other.
 
 The clearest example is an **arbitrary discontinuity** in policy. For example, imagine that we have an urban renewal program that targets houses in a poorer area based on some geographical boundary. If the houses on each side of the boundary are similar enough that we think their potential outcomes are the same, then we can remove selection bias by comparing individuals on one side of the boundary to the other. We typically do this with a **regression discontinuity design**, or if we have panel data we might use **differences-in-differences**.
@@ -525,38 +517,108 @@ Here Z is the variable corresponding to our natural experiment. Then, we can est
 \hat{\delta} = \frac{\text{Cov}(Z,Y)}{\text{Cov}(Z,D)}.
 ```
 
+For example, imagine there is some observable quality shifter that changes the probability houses get reconstructed $Z_{i}$ such that
+
+```math
+D_{i} = \gamma Z_{i} + \eta X_{i} + \zeta_{i}
+```
+
+and
+
+```math
+Y_{i} = \delta D_{i} + \beta X_{i} + \epsilon_{i}.
+```
+
+Then if we estimate $\hat{\gamma}, \hat{\beta}$ from the first stage, we can construct the fitted value of treatment
+
+```math
+\hat{D}_{i} = \hat{\gamma} Z_{i} + \hat{\eta} X_{i}
+```
+
+and include this in our second stage regression
+
+```math
+Y_{i} = \hat{\delta} \hat{D}_{i} + \beta X_{i} + \epsilon_{i}
+```
+
+then the estimator $\hat{\delta}$ is a consistent and unbiased estimator of the treatment effect.
+
+If we generate such an example, we get
 
 "
-
-# ╔═╡ 971a83cc-0348-48ce-97c8-23620440e942
-md"ERROR IN 2SLS BELOW"
 
 # ╔═╡ 62181f51-71eb-4fe7-94f4-1618b00c362a
 begin
 
-	Z_dist = Bernoulli()
+	Z_dist = Bernoulli(0.3) # draw a binary instrument
 	Z = rand(rng, Z_dist, 10000)
-	D_iv = zeros(10000)
-	D_iv[(Z.==1) .& (X_caus .>= 1)] .= 1
+	histogram(Z)
+	Z = 1 .* Z # generating binary instrument
+
+	D_iv =  0.25 .* Z + 0.15 .* X_caus 
 
 	Y_iv = exp.(bx .* X_caus + d .* D_iv + error_caus)
 
-	fs_iv_mat = [X_caus Z Y_iv]
+	fs_iv_mat = [X_caus Z D_iv]
 
 	fs_params = (fs_iv_mat[:,1:2]' * fs_iv_mat[:,1:2])^-1 * fs_iv_mat[:,1:2]' *      fs_iv_mat[:,3]
 
 	fs_fitted = fs_iv_mat[:,1:2] * fs_params
 
-	ss_iv_mat = [X_caus fs_fitted Y_iv]
+	ss_iv_mat = [X_caus fs_fitted log.(Y_iv)]
 
 	ss_params = (ss_iv_mat[:,1:2]' * ss_iv_mat[:,1:2])^-1 * ss_iv_mat[:,1:2]' *      ss_iv_mat[:,3]
+
+	scatter(Z, D_iv, label="Treatment assignment")
+	ylabel!("D")
+	xlabel!("Z")
+
+	#Print("Parameter estimate by IV: " * string(ss_params[2]))
+
+	
+
+
+
+	
+	#btm = cov(D, Z)
+
+	#iv_est = tp/btm
+
+	
+
+	
+
+	
+	#D_iv = zeros(10000)
+	#D_iv[(Z.==1) .& (X_caus .>= 1)] .= 1
+
+	#Y_iv = exp.(bx .* X_caus + d .* D_iv + error_caus)
+
+	#fs_iv_mat = [X_caus Z Y_iv]
+
+	#fs_params = (fs_iv_mat[:,1:2]' * fs_iv_mat[:,1:2])^-1 * fs_iv_mat[:,1:2]' *      fs_iv_mat[:,3]
+
+	#fs_fitted = fs_iv_mat[:,1:2] * fs_params
+
+	#ss_iv_mat = [X_caus fs_fitted Y_iv]
+
+	#ss_params = (ss_iv_mat[:,1:2]' * ss_iv_mat[:,1:2])^-1 * ss_iv_mat[:,1:2]' *      ss_iv_mat[:,3]
 
 	#Print(ss_params[2])
 
 end
 
+# ╔═╡ e70bcded-1005-446b-98b4-129f66993953
+md"and our estimate of the treatment effect is"
+
+# ╔═╡ a2dc4929-7385-4bd7-a386-1817ab6d2979
+Print("Parameter estimate by IV: " * string(ss_params[2]))
+
+# ╔═╡ b72c4212-a688-47cd-8db6-53ea65679fcb
+md" which is also a lot better."
+
 # ╔═╡ e1225785-a96f-4668-b142-e17edc0f20bf
-md" ### 3) Structural estimation
+md" ##### 3) Structural estimation
 The third way to remove any selection bias is to fit a fully specified economic model to the data. The model should include the effect of any relevant mechanisms that generate a bias. To be a bit more precise, we fit some model
 
 ```math
@@ -577,26 +639,31 @@ An advantage here is that you get a full description of potentially non-linear c
 "
 
 # ╔═╡ 9a46c416-6fc1-4bca-a347-f7ff68742ca4
-md"## Ordinal data"
+md"### Discrete choice"
 
 # ╔═╡ 2feaea6a-baa5-4742-ac64-9080caee12b8
-md" A special type of data we often run into in policy evaluation is data that indicates that an individual has made a certain choice. For example, we might have data on whether a set of individuals purchase a house in a certain neighbourhood." 
+md" A special type of data we often run into in policy evaluation is data that indicates that an individual has chosen one option over another i.e made a **discrete choice**. For example, we might have data on whether a set of individuals purchase a house in a certain neighbourhood. We cannot use our normal set of models to evaluate this data as the **dependent variable is no longer continuous**. Different values indicate different choices, not getting more or less of something." 
 
 # ╔═╡ 3ab2dc19-22f6-430e-b7e8-09d83deec04d
-md" The first way we might try to estimate this model is just using least-squares regression. This is called the **linear probability model**, and is useful for instrumental variables regression. But sometimes it is not that useful because our probalem is non-linear...
+md" If we only have two choices, the first way we might try to still analyse the data by just using OLS regression. The resulting model is called the **linear probability model**. The linear probability mode is useful for instrumental variables regression (read the discussion of Hausman forbidden regressions in Angrist and Pishke if you are interested why), but is typically not very good for describing binary choice data. For example, it often predicts choice probabilities that are greater than one or less than zero.
 
-To fit a non-linear model by maximum-likelihood, the first thing we notice is that by definition any binary (multinomial) variable follows the binomial (multinomial) distribution. So the log-likelihood is
+But there is a more natural way of fitting the model using maximum-likelihood. As we mentioned above, by definition any binary (multinomial) variable follows the binomial (multinomial) distribution. So the log-likelihood ends up being 
+
 ```math
-l(y|\beta) = \sum_{i=1}^{N}y_{i}p(y_{i}=1|X, \beta) + (1-y_{i})(1-p(y_{i}=1|X, \beta)).
+l(y|x, \beta) = \sum_{i=1}^{N}\sum_{j=1}^{M}y_{ij}\ln{p_{ij}(x_{i}, \beta)}
 ```
+
+which has nice properties. So we need to choose a form of $p()$. To think about how we might choose this, lets take a step back and think about how we would model people making the choices.
 
 "
 
 # ╔═╡ 348e8426-f74a-43b5-bbb7-384133455a7d
-md" ### The additive random utility model"
+md" ##### The additive random utility model"
 
 # ╔═╡ 45b5b2a9-104a-480b-963b-e1b21542b84f
-md"From our microeconomics refresher, we know that economists typically think of individuals as making choices to maximise their preferences, which we represent mathematically (under certain assumptions) with a utility function. So, if we observe choices, we think that they are the result of the individual maximising their utility. To be more specific, imagine that utility individuals get from each choice depends on some choice-specific components we can observe, and an additive component that we cannot and we assume is a random variable"
+md"From our microeconomics refresher, we know that economists typically think of individuals as making choices to maximise their preferences, which we represent mathematically (under certain assumptions - see the microeconomics note) with a utility function. So, if we observe choices, we think that they are the result of the individual maximising their utility. 
+
+To be more specific, assume that we observe a binary choice and imagine that utility individuals get from each choice depends on some choice-specific components we can observe, and an additive component that we cannot and we assume is a random variable"
 
 # ╔═╡ 6fb82d2d-8951-485e-9fd6-1a5867949358
 md"
@@ -632,8 +699,13 @@ P(Y_{i}=1|X_{i}) = P(\tilde{\epsilon}_{i} > - \tilde{\alpha} - \beta \tilde{X}_{
 ```
 "
 
+# ╔═╡ 0befc535-a97e-45de-9f6b-b3cc0043d216
+md"##### Logit and probit models for discrete data"
+
 # ╔═╡ c71a354c-fc48-40a1-836d-4324791fe499
-md" The final thing we need is a model for $\tilde{\epsilon}_{i}$, then we can construct a likelihood using our binomial likelihood from before. Normally we either choose a logistic distribution, giving a logit model, 
+md" To take this to data using maximimum likelihood, all we need is a model for the distribution of $\tilde{\epsilon}_{i}$ that we can plug into our likelihood from before. Notice that we need to pick a distribution for the differences of maxima of errors, not for individual error. If you are interested in why this makes a difference, see [here](https://en.wikipedia.org/wiki/Generalized_extreme_value_distribution).
+
+Normally we either choose a logistic distribution, giving a logit model, 
 ```math
 p(y_{i}=1|X_{i}) = \frac{e^{\tilde{\alpha} + \beta \tilde{X}_{i}}}{1 + e^{\tilde{\alpha} + \beta \tilde{X}_{i}}}
 ```
@@ -643,7 +715,7 @@ or a normal distribution, giving a probit model
 ```math
 p(y_{i}=1|X_{i}) = \Phi(\tilde{\alpha} + \beta \tilde{X}_{i}).
 ```
-. We choose a logistic distribution specifically because of a result in extreme-value theory. The **Fisher-Tippett-Gnedenko theorem** says that the maximimum of a sequence of i.i.d normal variables converges to a Gumbel distribution. The difference of two Gumbel distributed variables has a logistic distribution."
+"
 
 # ╔═╡ 7e57a34a-880f-4a72-b693-1e7692701dc8
 md" For example, here we simulate the utilities above depending, with Gumbel(0,1) additive random utility shocks."
@@ -660,6 +732,9 @@ begin
 	"
 end
 
+# ╔═╡ 912a91cb-df4c-464d-b257-c36511d83df9
+md" The distribution of the difference in utilities is then"
+
 # ╔═╡ eb3d7ef3-febb-4fc3-a1e5-c40f8a208e29
 begin
 
@@ -667,10 +742,16 @@ begin
 	price_0_dist = Normal(0,1)
 	error_dist = Gumbel(0,1)
 
-	p_1 = rand(rng, price_1_dist, 10000)
-	p_0 = rand(rng, price_0_dist, 10000)
-	e_1 = rand(rng, error_dist, 10000)
-	e_0 = rand(rng, error_dist, 10000)
+	#p_1 = rand(rng, price_1_dist, 10000)
+	#p_0 = rand(rng, price_0_dist, 10000)
+	e_1 = rand(rng, error_dist, 1000)
+	e_0 = rand(rng, error_dist, 1000)
+
+	p_0 = collect(5.01:0.01:15)
+	p_1 = collect(0.02:0.02:20)
+
+	histogram(p_0 .- p_1)
+
 
 	#histogram(p_1 .- p_0)
 
@@ -680,49 +761,104 @@ begin
 	u_0 = alpha_0 .+ beta_choice .* p_0 .+ e_0
 	diff = u_1 .- u_0
 
-	#histogram(diff)
+	histogram(diff, label="")
+	xlabel!("U1 - U0")
 
-	choice = zeros(10000)
+	choice = zeros(1000)
 	choice[diff .> 0] .= 1
 
-	scatter(p_1 .- p_0, choice, label="Data")
+	scatter(p_1 .- p_0, choice, label="Individual choices", alpha=0.3)
 	xlabel!("Price difference")
+	ylabel!("Choice")
 
-	p_diff = p_1 .- p_0
-	param_est = (p_diff' * p_diff)^-1 * p_diff' * choice
+	p_diff = p_1 .- p_0 # differences in prices
 
-	plot_mat = [p_diff choice]
+	plot_mat = [ones(1000) p_diff choice]
 	sort!(plot_mat, dims=1, by = x -> x[1])	
 	
+	param_est = (plot_mat[:,1:2]' * plot_mat[:,1:2])^-1 * plot_mat[:,1:2]' * plot_mat[:,3]
 
-	plot!(plot_mat[:,1], param_est .* plot_mat[:,1], label="LPM")
+	
+
+	plot!(plot_mat[:,2], plot_mat[:,1:2] * param_est, label="LPM", color=:green2)
 	#Print(param_est)
 
 end
 
 # ╔═╡ 263765d0-5034-4b89-85dc-bb668dfaf540
-md" Now lets look what happens when we describe our data using a logit model."
+md" We see that the linear probability model does not capture the variation in our data very well. So now lets look what happens when we describe our data using a logit model. First, we need to solve the optimisation problem to get parameters. To do this, we set up a function for the negative log likelihood given a parameter guess.Then we minimise it using gradient descent (as the norm in numerical optimisation is to minimise things rather than maximising things)."
 
 # ╔═╡ 2c0cca95-4d32-4810-89d3-e489823ccfa6
 begin
 
-	obj_logit(beta, y, X) = - mean(y .* ( 1 ./(1 .+ exp.(-1 .*( X[:,1] .* beta[1] .+ X[:,2] .* beta[2])))) .+ (1 .- y) .* (1 .- ( 1 ./(1 .+ exp.(-1 .*( X[:,1] .* beta[1] .+ X[:,2] .* beta[2]))))))
+	logit_log_likelihood(beta, y, X) = - mean(y .* (log.(exp.(X*beta) ./ (1 .+ exp.(X*beta)))) + (1 .- y) .* log.(1 .- (exp.(X*beta) ./ (1 .+ exp.(X*beta)))))
+	
+	
+	#- mean(y .* ( 1 ./(1 .+ exp.(-1 .*( X[:,1] .* beta[1] .+ X[:,2] .* beta[2])))) .+ (1 .- y) .* (1 .- ( 1 ./(1 .+ exp.(-1 .*( X[:,1] .* beta[1] .+ X[:,2] .* beta[2]))))))
 
-	g(x::Vector) = obj_logit(x, plot_mat[:,2],[ones(10000) plot_mat[:,1]]) # fixing objective function
+	g(x::Vector) = logit_log_likelihood(x, plot_mat[:,3], plot_mat[:,1:2]) # fixing objective function
 
 	beta_0 = [0.1,  1.0]
 
     sol_opt = Optim.optimize(g, beta_0, GradientDescent()) 
-	Print(sol_opt.minimizer)
+	#Print(sol_opt.minimizer)
 
 
 end
 
+# ╔═╡ 19ed8642-6213-4074-ad8b-f7b2b0c33018
+md" Our optimiser will print something telling us how the optimisation has gone. **It is important to check this - optimisation often fails!**. If the optimisation routine fails, our parameter estimates will be nonsense. A common Stata error researchers made in the past was to report parameter estimates when the optimisation was not successful!"
+
+# ╔═╡ a5945582-9f44-4df9-a2b6-5ad07299b8f4
+Print("Our parameter estimates are: " .* string(sol_opt.minimizer))
+
+# ╔═╡ 38980e52-1044-49a1-be77-6b4875101fed
+begin
+
+	beta_logit = sol_opt.minimizer
+
+	ests = exp.(plot_mat[:,1:2]*beta_logit) ./ (1 .+ exp.(plot_mat[:,1:2]*beta_logit))
+
+	scatter(p_1 .- p_0, choice, label="Individual choices", alpha=0.3)
+	xlabel!("Price difference")
+	ylabel!("Choice")
+	plot!(plot_mat[:,2], plot_mat[:,1:2] * param_est, label="LPM", color=:green2, lwd=5)
+
+	plot!(plot_mat[:,2], ests, label="Logit", color=:red, lwd=5)
+
+
+	
+
+end
+
 # ╔═╡ f52890b5-0e7c-4bed-966e-f41532048583
-md"PLOT LOGIT WHEN CORRECT"
+md"We see that the logit model describes the data a lot better! When we interpret the parameters, we need to notice that **the marginal effect of a change in the variable is non-linear**. So, we interpret the effect of changes in the difference in prices by **taking the derivative of the choice probability around a price difference**, rather than just reading the parameters as we do with OLS."
+
+# ╔═╡ bfce39b6-1aa9-4810-8b15-a47bc20fd9d3
+md" ##### Multinomial logits"
+
+# ╔═╡ 9b7fab7e-912c-4916-aceb-a0f2cdbc0732
+md" We can follow exactly the same logic when we have more than two possible choices (**multinomial data**). Typically, people use a logistic distribution for the errors in this case for reasons we will not get into here. So now, in the simplest version, we let the regressors vary for individuals across each alternative
+
+```math
+p(y_{i}=j|X_{ij}) = \frac{\exp(\alpha + \beta X_{ij})}{\sum_{j'}\exp(\alpha + \beta X_{ij'})} 
+```
+
+called a **conditional logit**.
+
+We might also have regressors that stay the same across individuals, whose effect varies across alternatives (e.g income in neighbourhood choice). We can include these by letting the coefficients vary across alternatives e.g
+
+```math
+p(y_{i}=j|X_{ij}) = \frac{\exp(\alpha_{j} + \beta_{j} X_{i})}{\sum_{j'}\exp(\alpha_{j'} + \beta_{j'} X_{i})}
+```
+-- called a **multinomial logit**. Finally, we might include both, which is called a **mixed logit**. Whichever specification we choose, to find parameters we substitute into the multinomial likelihood and optimise just as we did above with binary data.
+"
 
 # ╔═╡ be1572cc-421d-4d04-92d5-35e62797085c
-md" ## Appendix: Fundamental concepts in econometrics"
+md" ### Appendix: Fundamental concepts in econometrics"
+
+# ╔═╡ aeff8fca-3678-42b7-a60b-1c9e437d81ca
+md" ##### Estimation"
 
 # ╔═╡ 9628f826-8ed9-4148-bd47-26420c6134b6
 md"
@@ -737,9 +873,32 @@ y = f(x, \theta)
 
 that governs how each element of  $\mathbf{X}$ 'actually' affects each element of $\mathbf{Y}$. Otherwise, our population $\mathbf{Y}$ and $\mathbf{X}$ are not linked at all. Typically, the $\theta$ from this data generating process is what we want to measure. Second, we need to observe some **sample** of our variables $\{y_{i}\}_{i=1}^{N} \subset \mathbf{Y}, \{x_{i}\}_{i=1}^{N} \subset \mathbf{X}$. Once we have both of these things, we need to construct an **estimate** of $\theta$, $\hat{\theta}$ from our sample -- essentially our best guess at what the 'true' $\theta$ is. $\theta$ is called our **estimand** - the thing we are trying to measure.} To do this, we need an **estimator** -- a map from our sample to possible values of our parameters. Often, we do this by assuming that the 'true' data generating process has a certain functional form $y_{i} = g(x_{i}, \theta)$ $\forall i \in \{1, ..., N\}$, and then rearranging this functional form to get our estimate i.e $\hat{\theta} = g^{-1}(\{y_{i}\}_{i=1}^{N}, \{x_{i}\}_{i=1}^{N})$.
 
-But now we run into the **problem of induction** -- how can we say anything about the population quantity $\theta$ -- what we really care about -- from our sample estimate $\hat{\theta}$? Our sample might be weird in some way. Econometricians typically try to solve this problem by **falsification**. The idea of falsification originates with the philosopher Karl Popper. To illustrate it, lets consider an example. Imagine we want to test whether all swans are white. We could construct a huge sample of swans, and see whether each one is white. But we cannot say for sure based on this sample whether all swans are white. The next swan outside of our sample might be black. We can instead try to falsify the claim. If we observe a swan that is not white, we can say that the claim that all swans are white is false for sure, even though we do not observe all the swans. 
+##### Testing 
 
-Economists treat hypotheses about economic relations the same way. First, we construct a 'null hypothesis' for the value of $\theta$, $\theta = \theta_{0}$. Then, we build a **pivotal quantity**. A pivotal quantity is a function of observations and the unobservable parameters whose asymptotic distribution (distribution as the number of observations gets 'large enough') under the null hypothesis does not depend on the value of the parameter. Then, we compute the observed value based on our parameter and sample. If the value is 'unlikely enough' given the distribution, we say that our null hypothesis is 'falsified'. The standard example of this is a t-statistic, which is asymptotically normal."
+But now we run into the **problem of induction** -- how can we say anything about the population quantity $\theta$ -- what we really care about -- from our sample estimate $\hat{\theta}$? Our sample might be weird in some way that we do not know. Econometricians typically try to solve this problem by **falsification**, which originates from the statistician Ronald Fisher and the philosopher Karl Popper. The idea is instead of trying to say something about what the population is from our sample, we can say something about what it is not. First, we construct a 'null hypothesis' about the population e.g 'all swans are white'. Then, we construct a measure of the null hypothesis from our sample e.g we find some swans and look at their colour. If the value that we observe in the sample 'disagrees' with our null hypothesis - we see a black swan - then we can discard our null hypothesis about the population. Else, we can keep it.
+
+Statistically, this means we first construct a 'null hypothesis' for the value of $\theta$, $\theta = \theta_{0}$. Then, we build a **pivotal quantity**. A pivotal quantity is a function of observations and the unobservable parameters whose asymptotic distribution (distribution as the number of observations gets 'large enough') under the null hypothesis **does not depend on the value of the parameter**.
+Then, we compute the realisation of the pivotal quantity based on our estimate - known as a **test statistic**. We compare the value we observe to the distribution under the null hypothesis. If the value is 'unlikely enough', we assume that the true distribution of the pivotal quantity cannot be the distribution under the null hypothesis. We take this as evidence that the null hypothesis is falsified.
+
+The standard example of a pivotal quantity is the **t-statistic** in a linear regression
+
+```math
+\frac{\hat{\beta} - \beta_{0}}{\frac{\sigma}{\sqrt{n}}}
+```
+
+where $\beta_{0}$ is the value of the parameter under the null hypothesis. We know that if $\beta = \beta_{0}$, the t-statistic has an asymptotic standard normal distribution. So we compute the realised t-statistic and look at where it sits in the normal distribution. If it is far enough in the tails, we assume $\hat{\beta} \neq \beta_{0}$. Other standard examples you should know are F-tests and Wald tests.
+
+##### Uncertainty
+
+We also want to quantify how uncertain our parameter estimates are outside of doing a simple test. We can do this by constructing a **confidence set** based on the distribution of the deviations of the data from our model (residuals). For a linear rgeression parameter, the 95 percent confidence set if
+
+```math
+\hat{\beta} \pm 1.96 \times \frac{\hat{\sigma}}{\sqrt{n}}.
+```
+
+where $\hat{\sigma}$ is the standard deviation of the residuals. Interpretation of confidence sets is a little tricky, but roughly speaking there is a 95 percent chance that this set covers the true value of the parameter assuming that our specification of the data generating process is correct. Confidence sets lead to **standard errors**, which is a huge literature in itself that we will not cover here. 
+
+"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1876,15 +2035,15 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╟─f5450eab-0f9f-4b7f-9b80-992d3c553ba9
 # ╟─561b4e30-2916-47c5-ae90-1c2396343366
-# ╠═ff95d6a8-e56b-48c9-9d64-61a134e6effc
-# ╠═d4dd4e40-8130-11ed-1d7f-1f21a70ab743
+# ╟─ff95d6a8-e56b-48c9-9d64-61a134e6effc
+# ╟─d4dd4e40-8130-11ed-1d7f-1f21a70ab743
 # ╟─66765dfc-7cc3-43af-a282-08dcc08e15a9
 # ╟─98e0a048-1a7e-4242-b2a5-982d273d6e87
 # ╟─a1595bed-ecf7-4042-bff6-b63fd4fd351f
 # ╟─dcb102b5-1cef-48e4-a3b6-53f70a33ecf1
-# ╟─7e4e549c-ce8d-47c6-ab82-bf0d570dcacb
+# ╠═7e4e549c-ce8d-47c6-ab82-bf0d570dcacb
 # ╟─c824a69f-637a-4b61-acee-e91410ac4f63
-# ╟─46ec542c-de39-42cd-929f-dccccc2c462d
+# ╠═46ec542c-de39-42cd-929f-dccccc2c462d
 # ╟─e5a98d77-a512-4c58-8ca4-4dc384971df2
 # ╟─73ee62a1-de4e-40b8-8d62-56bb07e292e8
 # ╟─eae896fe-c1c8-4ae2-a896-0641f472d6be
@@ -1911,9 +2070,7 @@ version = "1.4.1+0"
 # ╟─e4ccd357-535f-4d2a-a832-ab02202f66bc
 # ╟─70404453-6444-4ba4-8b8e-f7cb43bd6b70
 # ╟─b16801b2-0e2b-44ba-922e-3653a0baef70
-# ╟─6f261bf9-dee9-4a0a-91b7-e6b1adf484fd
-# ╟─d609e18a-6508-4867-86ab-b45691d92f41
-# ╟─57a4e042-8aac-4f5c-a668-8a8060403b51
+# ╠═6f261bf9-dee9-4a0a-91b7-e6b1adf484fd
 # ╟─03c57489-3b0e-436d-8e8b-24393c640a2a
 # ╟─393f8fa0-a9f5-4dc6-b54f-f460b709ddb1
 # ╟─9518b760-2112-437f-bdc7-eee26cb54d8c
@@ -1927,31 +2084,41 @@ version = "1.4.1+0"
 # ╟─4e5f42e6-d1d0-4233-8f41-a339db0c0be4
 # ╟─235dac45-c8a0-4f32-aa11-f9f6d5b629c7
 # ╟─afabdddb-c728-4910-a45f-ec1a055f3238
-# ╟─77988813-3b5c-4757-bbae-d79a37f6623e
+# ╠═77988813-3b5c-4757-bbae-d79a37f6623e
 # ╟─a72e5d33-0a1f-4a79-b855-79197f4613cb
 # ╟─57fa9569-9089-4ef4-bc2b-ecbd8c964a44
-# ╟─ba4ba6a6-d473-4a71-9c91-312b2e75bfa5
+# ╠═ba4ba6a6-d473-4a71-9c91-312b2e75bfa5
 # ╟─2b5ad567-1ce2-4716-a8e8-b22c1f559bf2
 # ╟─37cba339-e070-4e23-ac0b-ac2eeff51279
-# ╟─971a83cc-0348-48ce-97c8-23620440e942
 # ╟─62181f51-71eb-4fe7-94f4-1618b00c362a
+# ╟─e70bcded-1005-446b-98b4-129f66993953
+# ╟─a2dc4929-7385-4bd7-a386-1817ab6d2979
+# ╟─b72c4212-a688-47cd-8db6-53ea65679fcb
 # ╟─e1225785-a96f-4668-b142-e17edc0f20bf
 # ╟─9a46c416-6fc1-4bca-a347-f7ff68742ca4
 # ╟─2feaea6a-baa5-4742-ac64-9080caee12b8
-# ╠═3ab2dc19-22f6-430e-b7e8-09d83deec04d
+# ╟─3ab2dc19-22f6-430e-b7e8-09d83deec04d
 # ╟─348e8426-f74a-43b5-bbb7-384133455a7d
 # ╟─45b5b2a9-104a-480b-963b-e1b21542b84f
 # ╟─6fb82d2d-8951-485e-9fd6-1a5867949358
 # ╟─316cb637-6f83-4f2f-a354-d75ff59040dd
 # ╟─55a75f7e-528c-4aad-a5ab-32ed9d264793
+# ╟─0befc535-a97e-45de-9f6b-b3cc0043d216
 # ╟─c71a354c-fc48-40a1-836d-4324791fe499
 # ╟─7e57a34a-880f-4a72-b693-1e7692701dc8
 # ╟─54175a37-1c01-4c9d-a25a-93505b5295ff
+# ╟─912a91cb-df4c-464d-b257-c36511d83df9
 # ╟─eb3d7ef3-febb-4fc3-a1e5-c40f8a208e29
 # ╟─263765d0-5034-4b89-85dc-bb668dfaf540
 # ╟─2c0cca95-4d32-4810-89d3-e489823ccfa6
+# ╟─19ed8642-6213-4074-ad8b-f7b2b0c33018
+# ╟─a5945582-9f44-4df9-a2b6-5ad07299b8f4
+# ╟─38980e52-1044-49a1-be77-6b4875101fed
 # ╟─f52890b5-0e7c-4bed-966e-f41532048583
-# ╠═be1572cc-421d-4d04-92d5-35e62797085c
+# ╟─bfce39b6-1aa9-4810-8b15-a47bc20fd9d3
+# ╟─9b7fab7e-912c-4916-aceb-a0f2cdbc0732
+# ╟─be1572cc-421d-4d04-92d5-35e62797085c
+# ╟─aeff8fca-3678-42b7-a60b-1c9e437d81ca
 # ╟─9628f826-8ed9-4148-bd47-26420c6134b6
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
