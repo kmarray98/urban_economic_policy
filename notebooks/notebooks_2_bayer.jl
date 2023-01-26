@@ -25,9 +25,11 @@ md" Here, we simulate simple versions of the sorting model we cover to illustrat
 
 In the assignment, we model how households choose houses in **different neighbourhoods**. We include **house-type specific variables**, and **neighbourhood specific variables**. To model heterogeneity, we let the effects of some variable **vary by the type of individual**.
 
+We proceed as follows.
 + First, we illustrate the idea of boundary discontinuities that comes up in the paper.
-+Second, we will illustrate how individuals preferences over houses may lead them to sort into different neighbourhoods. 
-+Finally, we will put this all together to get the full model of neighbourhood choice. 
++ Second, we will illustrate how individuals preferences over houses may lead them to sort into different neighbourhoods. 
++ Third, we briefly discuss the correlation of prices and unobservable taste shocks in the model. 
++ Fourth, we develop a full model of neighbourhood choice. 
 
 "
 
@@ -61,7 +63,7 @@ begin
 	s_dist = Normal(0,0.25)
 	size_shock = rand(rng, s_dist, 10)
 
-	sizes = 2 .* h_loc .+ size_shock 
+	sizes = 4 .* h_loc .+ size_shock 
 
 	scatter(h_loc, sizes, label="House sizes")
 	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
@@ -164,10 +166,10 @@ begin
 end
 
 # ╔═╡ 7c61a350-8a9c-4cfc-bd31-52653aa12ee0
-md" ### Toy example - individual preferences over houses cause sorting into neighbourhoods"
+md" ### Individual preferences over houses can cause sorting into neighbourhoods"
 
 # ╔═╡ 41c08ea2-e0eb-426b-a2a9-ef9716efece7
-md" To illustrate the mechanisms at play, we start by modelling the choice of individual houses when houses differ across neighbourhoods. In the main model, we will then include more individuals, and so **expand this to sorting into neighbourhoods**."
+md" To illustrate the mechanisms at play, we start by simulating a little toy model the choice of individual houses when houses differ across neighbourhoods. We will see that, depending on parameters, individual choice can lead to sorting into neighbourhoods."
 
 # ╔═╡ 30651f0f-fc94-454e-9b24-dc13fb6bb212
 md" Assume we observe the same ten houses as above across two neighbourhoods."
@@ -201,7 +203,7 @@ begin
 end
 
 # ╔═╡ 4255bc9b-5d87-4a8c-b595-addea72f5b67
-md" Sort the agents into two groups of 5 households, A and B. Households in A care about size a lot and school quality a little, and households in B care about school quality a lot and size a little. As in the paper, let preferences be given by the indirect utility function
+md" Sort the agents into two groups of 5 households, A and B. Households in A care about size a lot and school quality a little, and households in B care about school quality a lot and size a little. Let preferences be given by the indirect utility function
 
 ``` math
 
@@ -230,10 +232,10 @@ md"Set the parameters in the utility function below"
 
 # ╔═╡ 211b9ebd-79cb-4233-af3e-8123ac34e350
 begin
-	a_size_slide = @bind a_size Slider(0:0.1:2.0, 0.5, true)
-	a_score_slide = @bind a_score Slider(0.0:0.1:2.0, 0.5, true)
-	a_A_slide = @bind a_A Slider(0.0:0.1:2.0, 0.5, true)
-	a_B_slide = @bind a_B Slider(0.0:0.1:2.0, 0.5, true)
+	a_size_slide = @bind a_size Slider(0:0.1:2.0, 0.3, true)
+	a_score_slide = @bind a_score Slider(0.0:0.1:2.0, 0.3, true)
+	a_A_slide = @bind a_A Slider(0.0:0.1:2.0, 1.0, true)
+	a_B_slide = @bind a_B Slider(0.0:0.1:2.0, 1.0, true)
 	md"a\_size: $(a_size_slide) \
 	a\_score: $(a_score_slide) \
 	a\_A: $(a_A_slide) \
@@ -273,7 +275,7 @@ begin
 	
 
 	#rng = MersenneTwister(2025)
-	shock_dist = Gumbel() # distribution of random utility shocks
+	shock_dist = Gumbel(0, 0.35) # distribution of random utility shocks
 	eps_1 = rand(rng, shock_dist, 100)
 
 	data_mat = [agent house house_score house_size type_A_dum type_B_dum eps_1]
@@ -313,10 +315,13 @@ begin
 	zlabel!("Utilities")
 end
 
+# ╔═╡ 0c53f15a-3b4a-4acb-bec5-7e5274acb850
+md" We see that type As prefer the second set of houses, and type Bs prefer the first set. Now we add some random utility shocks and plot the utilities together."
+
 # ╔═╡ 070245cc-830e-4efc-9cb9-5bbe7e93d59f
 begin
 
-	scatter(agent[1:50], house[1:50], utilities[1:50], label="Type A, including shocks", color=:red)
+	scatter(agent[1:50], house[1:50], utilities[1:50], label="Type A, including shocks", color=:red, camera=(80, 15))
 	scatter!(agent[51:100], house[51:100], utilities[51:100], label="Type B, including shocks", color=:blue)
 	xlabel!("Household")
 	ylabel!("House")
@@ -379,7 +384,18 @@ end
 Print("Correlation between taste shifters and house prices is: " * string(cor(zetas, prices)))
 
 # ╔═╡ 4735dbdf-ffa4-4ed8-a58f-a8e6a91a4bcd
-md" Then we need to instrument the price term, again as we saw in the econometrics refresher. As they suggest in the paper, we can use some other price variables in the city that are far enough away that they will only affect the price of this house through changing equilibrium in the housing market."
+md" Then we need to instrument the price term, again as we saw in the econometrics refresher. As they suggest in the paper, we can use some other price variables in the city that are far enough away that they will only affect the price of this house through changing equilibrium in the housing market. If we instrument prices with local prices in the example above and compute the correlation with the latent taste shifters, we see that the problem goes away."
+
+# ╔═╡ f6713dcc-71ba-4a69-ac11-d39c7a35c4a8
+begin
+
+   beta_price_hat =  (local_prices' * local_prices)^-1 * local_prices' * prices
+   instrumented_prices = local_prices .* beta_price_hat
+
+	Print("Correlation between taste shifters and instrumented house prices is: " * string(cor(zetas, instrumented_prices)))
+end
+	
+
 
 # ╔═╡ c32251a0-e88c-467f-87db-ee7a4b50b9df
 md" ### Full model - combining the above"
@@ -416,14 +432,14 @@ To illustrate how this model works, lets again simulate a simple example with tw
 
 # ╔═╡ 17af65ee-769d-4873-aac4-5e73b8d53aa1
 begin
-	size1_slide = @bind X1 Slider(0:0.1:2.0, 0.5, true)
-	size2_slide = @bind X2 Slider(0.0:0.1:1.0, 1.0, true)
-	test1_slide = @bind test1 Slider(0.0:0.1:10.0, 5.0, true)
-	test2_slide = @bind test2 Slider(0.0:0.1:10.0, 5.0, true)
+	size1_slide = @bind X1 Slider(0:0.1:5.0, 1.0, true)
+	size2_slide = @bind X2 Slider(0.0:0.1:5.0, 5.0, true)
+	test1_slide = @bind test1 Slider(0.0:0.1:10.0, 10.0, true)
+	test2_slide = @bind test2 Slider(0.0:0.1:10.0, 1.0, true)
 	p1_slide = @bind p1 Slider(0.0:0.1:1.0, 1.0, true)
 	p2_slide = @bind p2 Slider(0.0:0.1:1.0, 1.0, true)
-    d1_slide = @bind d1 Slider(0.0:0.1:1.0, 1.0, true)
-	d2_slide = @bind d2 Slider(0.0:0.1:1.0, 1.0, true)
+    d1_slide = @bind d1 Slider(0.0:0.1:1.0, 0.0, true)
+	d2_slide = @bind d2 Slider(0.0:0.1:1.0, 0.0, true)
 	md"size1: $(size1_slide) \
 	size2: $(size2_slide) \
 	test1: $(test1_slide) \
@@ -441,18 +457,18 @@ md" Next, we need to sort individuals into types. Lets sort them into two types,
 # ╔═╡ 914afaa6-2427-422e-9d8e-7a684ac718c6
 begin
 	n1_slide = @bind n1 Slider(0:1.0:1000.0, 500.0, true)
-	a0_size_slide = @bind a0_size Slider(0:0.1:2.0, 0.5, true)
-	a1_size_slide = @bind a1_size Slider(0:0.1:2.0, 0.5, true)
-	a2_size_slide = @bind a2_size Slider(0:0.1:2.0, 0.5, true)
-	a0_test_slide = @bind a0_test Slider(0:0.1:2.0, 0.5, true)
-	a1_test_slide = @bind a1_test Slider(0:0.1:2.0, 0.5, true)
-	a2_test_slide = @bind a2_test Slider(0:0.1:2.0, 0.5, true)
-	a0_p_slide = @bind a0_p Slider(0:0.1:2.0, 0.5, true)
-	a1_p_slide = @bind a1_p Slider(0:0.1:2.0, 0.5, true)
-	a2_p_slide = @bind a2_p Slider(0:0.1:2.0, 0.5, true)
-	a0_d_slide = @bind a0_d Slider(0:0.1:2.0, 0.5, true)
-	a1_d_slide = @bind a1_d Slider(0:0.1:2.0, 0.5, true)
-	a2_d_slide = @bind a2_d Slider(0:0.1:2.0, 0.5, true)
+	a0_size_slide = @bind a0_size Slider(0:0.1:2.0, 0.2, true)
+	a1_size_slide = @bind a1_size Slider(0:0.1:2.0, 0.1, true)
+	a2_size_slide = @bind a2_size Slider(0:0.1:2.0, 0.9, true)
+	a0_test_slide = @bind a0_test Slider(0:0.1:2.0, 0.2, true)
+	a1_test_slide = @bind a1_test Slider(0:0.1:2.0, 0.9, true)
+	a2_test_slide = @bind a2_test Slider(0:0.1:2.0, 0.1, true)
+	a0_p_slide = @bind a0_p Slider(0:0.1:2.0, 0.2, true)
+	a1_p_slide = @bind a1_p Slider(0:0.1:2.0, 0.2, true)
+	a2_p_slide = @bind a2_p Slider(0:0.1:2.0, 0.2, true)
+	a0_d_slide = @bind a0_d Slider(0:0.1:2.0, 0.2, true)
+	a1_d_slide = @bind a1_d Slider(0:0.1:2.0, 0.2, true)
+	a2_d_slide = @bind a2_d Slider(0:0.1:2.0, 0.2, true)
 	md"num 1: $(n1_slide) \
 	a0size: $(a0_size_slide) \
 	a1size: $(a1_size_slide) \
@@ -503,7 +519,7 @@ md" With these, we can draw location-specific unobserved utility shocks by indiv
 # ╔═╡ cb9cda3f-0d66-430e-88c0-8752557f924d
 begin
 
-	eps_dist = Gumbel()
+	eps_dist = Gumbel(0, 0.25)
 	eps_loc_1 = rand(rng, eps_dist, 1000)
 	eps_loc_2 = rand(rng, eps_dist, 1000)
 
@@ -528,10 +544,10 @@ begin
 	V_21 = delta_1 .+ lambda_21 .+ eps_loc_1[Int64(n1+1):end] # individuals of type 2
 	V_22 = delta_2 .+ lambda_22 .+ eps_loc_2[Int64(n1+1):end]
 
-	scatter([1:Int64(n1)], V_11, color=:blue, label="House in neighbourhood 1")
-	scatter!([1:Int64(n1)], V_12, color=:red, label="House in neighbourhood 2")
-	scatter!([Int64(n1 + 1):1000], V_21, color=:blue, label="")
-	scatter!([Int64(n1 + 1):1000], V_22, color=:red, label="")
+	scatter([1:Int64(n1)], V_11, color=:green2, label="House in neighbourhood 1", ylims=(0,20))
+	scatter!([1:Int64(n1)], V_12, color=:pink, label="House in neighbourhood 2")
+	scatter!([Int64(n1 + 1):1000], V_21, color=:green2, label="")
+	scatter!([Int64(n1 + 1):1000], V_22, color=:pink, label="")
 	vline!([n1], label="Type 1s to left")
 	xlabel!("Individual")
 	ylabel!("Utility")
@@ -1695,10 +1711,10 @@ version = "1.4.1+0"
 # ╟─7c61a350-8a9c-4cfc-bd31-52653aa12ee0
 # ╟─41c08ea2-e0eb-426b-a2a9-ef9716efece7
 # ╟─30651f0f-fc94-454e-9b24-dc13fb6bb212
-# ╠═2da940ce-bae2-49d3-a60e-c762452ee106
+# ╟─2da940ce-bae2-49d3-a60e-c762452ee106
 # ╟─774d82a4-6a21-4ac4-8119-4f25b3678e3d
-# ╠═470ef5a6-317c-4337-81c0-ae4ac25171c9
-# ╠═07fd86d2-e9c0-422f-ba0f-70f9f2e39f2e
+# ╟─470ef5a6-317c-4337-81c0-ae4ac25171c9
+# ╟─07fd86d2-e9c0-422f-ba0f-70f9f2e39f2e
 # ╟─4255bc9b-5d87-4a8c-b595-addea72f5b67
 # ╟─a96d68de-86c8-4b35-b5cb-428bea86f6f3
 # ╟─211b9ebd-79cb-4233-af3e-8123ac34e350
@@ -1707,6 +1723,7 @@ version = "1.4.1+0"
 # ╟─3f07028a-1b3e-49ab-8d81-ab338d2f96fb
 # ╟─3a1b807f-e1d5-463a-bbd2-7bc3fb4bce4c
 # ╟─cb0df518-231b-4248-9997-a48735f75356
+# ╟─0c53f15a-3b4a-4acb-bec5-7e5274acb850
 # ╟─070245cc-830e-4efc-9cb9-5bbe7e93d59f
 # ╟─1560aaf1-06f0-411d-93ff-ad83f5c82b7c
 # ╟─10006368-5d9c-4b9d-b790-8721d1b0f11a
@@ -1714,6 +1731,7 @@ version = "1.4.1+0"
 # ╟─c4a32e92-574f-4cde-b7ef-17459d05faad
 # ╟─e5fb740a-6d9b-44f5-a3a2-c59b1cb7a44a
 # ╟─4735dbdf-ffa4-4ed8-a58f-a8e6a91a4bcd
+# ╟─f6713dcc-71ba-4a69-ac11-d39c7a35c4a8
 # ╟─c32251a0-e88c-467f-87db-ee7a4b50b9df
 # ╟─91e48160-1026-46a4-ae3f-59c9d551c467
 # ╟─2cfca24e-f190-4b40-b90d-e43ae6225eac
