@@ -1,13 +1,14 @@
 # Course logistics
 
-## Lectures and tutorials
+## Tutorials
 
-coming soon
++ Friday 10th of February, 11-12.30 am
++ Friday 17th of February, 9-10.45 am
++ Friday 24th of February, 9-10.45 am
++ Friday 3rd of March, 9-10.45 am
++ Friday 10th of March, 9-10.45 am
++ Friday 17th of March, 9-10.45 am
 
-## Problem sets
+Assignments and due dates available on Canvas.
 
-coming soon
-
-## Evaluation
-
-coming soon
+Contact me at k.j.marray 'at' vu.nl
