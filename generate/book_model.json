@@ -30,17 +30,11 @@
     },	
 	
     {
-        "title": "Place-based policies",
+        "title": "Assignment 2",
         "contents": [
             {
-                "name": "Rossi-Hanberg et al. (2010)",
-                "notebook_path": "notebooks/2_rossi_hanberg.jl",
-                "video_id": "",
-                "preview_image_url": ""
-            },
-	   {
-                "name": "Kline and Moretti (2014)",
-                "notebook_path": "notebooks/2_Kline.jl",
+                "name": "Sorting models",
+                "notebook_path": "notebooks/2_bayer.jl",
                 "video_id": "",
                 "preview_image_url": ""
             }
