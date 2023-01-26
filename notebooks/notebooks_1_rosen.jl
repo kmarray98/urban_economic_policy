@@ -15,13 +15,13 @@ macro bind(def, element)
 end
 
 # ╔═╡ 97b82a10-919f-11ed-3013-07f52473d7d9
-md" # Hedonic pricing -- Rosen (1974)"
+md" # Hedonic pricing"
 
 # ╔═╡ c1a1fbcb-5f36-446c-ae17-49543652760b
 using PlutoUI,  Plots; plotly(size=(360,360))
 
 # ╔═╡ a6492cd7-140e-4aab-accc-19f9845d94fd
-md" The exposition here follows the presentation in section 2 of the Koster and Rouwendal paper on the reading list"
+md" Here we present the idea of hedonic pricing as in the first part of section 2 of the Koster and Rouwendal paper on the reading list."
 
 # ╔═╡ 3e9131cf-c5b2-4464-9b5d-4efc9eb5f992
 md" We have two goods: housing $k$ and the 'composite good' $q$ i.e everything else. Assume a logarithmic utility function
@@ -35,7 +35,7 @@ The budget constraint is
 q + p(k) = y
 ```
 
-where p(k) is the pricing function for housing relative to the price index for everything else. Specifically, assume house prices are quadratic in quality
+where p(k) is the pricing function for housing relative to the price index for everything else. Specifically, assume house prices are linear in quality
 
 ```math
 p(k) = \alpha + \beta_{1} k.
@@ -46,8 +46,8 @@ p(k) = \alpha + \beta_{1} k.
 begin
 	u_slide = @bind u Slider(0.01:0.1:7.0, 0.1, true)
 	gamma_slide = @bind gamma Slider(0.01:0.1:2.0, 0.5, true)
-	a_slide = @bind a Slider(0.0:0.1:10.0, 5.0, true)
-	b1_slide = @bind b1 Slider(0.0:0.1:2.0, 1.0, true)
+	a_slide = @bind a Slider(0.0:0.1:1.0, 0.5, true)
+	b1_slide = @bind b1 Slider(0.0:0.01:0.2, 0.1, true)
 	y_slide = @bind y Slider(10.0:0.1:20.0, 15.0, true)
 
 	md"Variables: \
@@ -61,9 +61,9 @@ end
 
 # ╔═╡ c327853d-76b3-494e-ad17-39ee7c2c0d7e
 begin
-	k = collect(0:0.1:40)
+	k = collect(0:0.1:80)
 	util = exp.(u .- gamma .* log.(k))
-	plot(k, util, lims = (0, 40),
+	plot(k, util, lims = (0, 80),
 	label="Indifference curve", linecolor=:red, lw=2)
 	xlabel!("Housing quality")
 	ylabel!("Other good")
@@ -76,11 +76,14 @@ begin
 
 	#Print(b2)
 
-	plot(k, price, lims = (0, 40), label="Price function", linecolor=:green, lw=2)
+	plot(k, price, lims = (0, 80), label="Price function", linecolor=:green, lw=2)
 	xlabel!("Housing quality")
 	ylabel!("Price")
 
 end
+
+# ╔═╡ afc30b37-3536-4a82-8266-feb5f0703167
+md" ### Estimating hedonic price functions"
 
 # ╔═╡ 4ae0dcf0-61ac-42c6-88c6-59941ab2b2f7
 md"Remembering that our expression for the value function is
@@ -110,29 +113,64 @@ md" Then we can find the optimal price as the intersection of these two function
 
 # ╔═╡ 790c351a-ed50-4a3f-87d6-5bb553516925
 begin
-      k_opt_1 = ((y - a)*exp(gamma) + sqrt(exp(gamma)) * sqrt((y - a)^2 * exp(gamma) - 4 * exp(u) *b1))/(2 * exp(gamma) * b1)
-      k_opt_2 = (-(y - a)*exp(gamma) + sqrt(exp(gamma)) * sqrt((y - a)^2 * exp(gamma) - 4 * exp(u) *b1))/(2 * exp(gamma) * b1)	
+
+	u_opts = log.(y .-a .- b1 .* k) + gamma .* log.(k)
+	u_max = maximum(u_opts) # utility maximising point
+	u_max_place = findmax(u_opts)[2]
+	k_max = k[u_max_place]
+
+	p_opt = a + b1 * k_max
+
+	val_opt = y .- exp.(u_max .- gamma .* log.(k))
+	
+
 
 	# ERROR IN OPTIMAL K
 
-	k_opt = max(k_opt_1, k_opt_2)
-	p_opt = a .+ (b1 .* k_opt_1)
-
 	# now need to compute maximal utility at this value and plot the value function for it
 
-	u_opt = log(y-p_opt) + gamma * log(k_opt_1)
+	#u_opt = log(y-p_opt) + gamma * log(k_opt_1)
 
-	val_opt = y .- exp.(u_opt .- gamma .* log.(k))
+	#val_opt = y .- exp.(u_opt .- gamma .* log.(k))
 
-	plot(k, val_opt, lims=(4, 40), label="Value function", linecolor=:red, lw=2)
-	plot!(k, price, lims = (0, 40), label="Price function", linecolor=:green, lw=2)
+	plot(k, val_opt, lims=(4, 80), label="Value function", linecolor=:red, lw=2)
+	plot!(k, price, lims = (0, 80), label="Price function", linecolor=:green, lw=2)
 end
 
 # ╔═╡ 2d4d481a-8a8a-4df1-90ed-2320102107b3
-md" which gives us the observed hedonic price."
+md" which gives us the observed hedonic price for one consumer. If we have a set of different observed price-quantity points here, it will trace out the price function! So we can then estimate the price. For example, with $\gamma$ between 0.1 and 1 we get the following points, that trace out our price function."
 
-# ╔═╡ 18071904-ae33-4b13-8c42-1154284ea684
-md" Next we want to get the demand function. So first, we need to get the virtual income and the marginal price."
+# ╔═╡ d84b0a86-b88a-4d99-9d39-3f60161391c5
+begin
+
+	#plot(k, price, lims = (0, 80), label="Price function", linecolor=:green, lw=2)
+	
+
+	g_vec = collect(0.1:0.01:1)
+	p_vec = zeros(91)
+	k_vec = zeros(91)
+
+	for i in 1:length(g_vec)
+		#print(i)
+		g = g_vec[i]
+
+	    u_opts = log.(y .-a .- b1 .* k) + g .* log.(k)
+	    u_max = maximum(u_opts) # utility maximising point
+	    u_max_place = findmax(u_opts)[2]
+		k_max =  k[u_max_place]
+	    k_vec[i] = k_max
+		p_vec[i] = a + b1 * k_max
+
+	end
+
+	
+
+	scatter(k_vec, p_vec, label="Observed prices", ylims=(0,80))
+
+end
+
+# ╔═╡ eaff9f68-f15a-4240-a67e-ecc75d867c78
+md" Once we have data that traces out the price function, we can then estimate the parameters in the function by fitting our favourite regression model e.g OLS. These estimates allow us to compute price elasticities."
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1089,17 +1127,19 @@ version = "1.4.1+0"
 # ╔═╡ Cell order:
 # ╟─f5450eab-0f9f-4b7f-9b80-992d3c553ba9
 # ╟─97b82a10-919f-11ed-3013-07f52473d7d9
-# ╠═c1a1fbcb-5f36-446c-ae17-49543652760b
+# ╟─c1a1fbcb-5f36-446c-ae17-49543652760b
 # ╟─a6492cd7-140e-4aab-accc-19f9845d94fd
-# ╠═3e9131cf-c5b2-4464-9b5d-4efc9eb5f992
+# ╟─3e9131cf-c5b2-4464-9b5d-4efc9eb5f992
 # ╠═543f0868-c0b8-440d-8b52-bc7493e0bb74
 # ╠═c327853d-76b3-494e-ad17-39ee7c2c0d7e
 # ╠═49d4644e-18d5-442e-b943-de5b79b5b97e
+# ╠═afc30b37-3536-4a82-8266-feb5f0703167
 # ╟─4ae0dcf0-61ac-42c6-88c6-59941ab2b2f7
-# ╠═5322e8a6-9612-4988-8c3d-ee269c715026
+# ╟─5322e8a6-9612-4988-8c3d-ee269c715026
 # ╟─fc577c32-2149-4ee9-af33-aecb145fd8e9
 # ╟─790c351a-ed50-4a3f-87d6-5bb553516925
 # ╟─2d4d481a-8a8a-4df1-90ed-2320102107b3
-# ╟─18071904-ae33-4b13-8c42-1154284ea684
+# ╟─d84b0a86-b88a-4d99-9d39-3f60161391c5
+# ╟─eaff9f68-f15a-4240-a67e-ecc75d867c78
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
