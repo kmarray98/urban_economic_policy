@@ -18,10 +18,10 @@
     },
 	
     {
-        "title": "Hedonic pricing",
+        "title": "Assignment 1",
         "contents": [
             {
-                "name": "Rosen (1974)",
+                "name": "Hedonic pricing",
                 "notebook_path": "notebooks/1_rosen.jl",
                 "video_id": "",
                 "preview_image_url": ""
