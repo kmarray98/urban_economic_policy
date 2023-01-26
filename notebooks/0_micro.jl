@@ -37,7 +37,7 @@ So here we go over
 with interactive examples."""
 
 # ╔═╡ 70f00a55-38d4-451e-84f5-b6916a8dcfe0
-md"""## Preferences and utility functions"""
+md"""### Preferences and utility functions"""
 
 # ╔═╡ 85a50370-7e3e-413c-ac5a-d7a8277c4b96
 md"""To model how people behave, we first think about what they prefer.
@@ -118,7 +118,7 @@ x \succ y \implies u(x) > u(y) \forall x,y
 md" The utility function gives us an easy way to model potentially complicated decision-making processes"
 
 # ╔═╡ efd5cfd1-a999-4a4f-a023-20f65dd27932
-md"## Utility maximisation"
+md"### Utility maximisation"
 
 # ╔═╡ ccdc813c-92e3-44f2-89bb-2468c3397174
 md" We model individuals as choosing the outcome they most prefer given **prices** of different bundles and their **budget constraint** e.g choosing over two possible goods x,y given their prices"
@@ -253,7 +253,7 @@ md"
 md" (the **Karush-Kuhn-Tucker conditions**). Solving gives us the optimal values $x^{*}, y^{*}$."
 
 # ╔═╡ 2a0a09d7-b27f-4727-bdec-425ea3038ac0
-md" ## Measuring utility with money"
+md" ### Measuring utility with money"
 
 # ╔═╡ 0dd43d28-7eac-483f-97ab-e265cbeff8b7
 md" There are two problems with utility for welfare analysis. The first is that it measures what individuals prefer, rather than what is best for them. The second is that we cannot directly measure the intensity of individual preferences on a common scale across individuals. Instead, we only the observe choices each individual makes. Here, we tackle the second problem by using money as a common scale." 
@@ -280,7 +280,7 @@ Then, we can define an **indirect utility function** $V(p, \omega)$ as the maxim
 md" This motivates two different types of welfare measures. One is asking individuals what prices they are **willing to pay** or **willing to accept** for different final outcomes. The second is measuring the **changes in expenditures** given different price changes"
 
 # ╔═╡ fdcc8192-ce09-4ea6-8519-73f9a7d0796a
-md"## Markets for single goods"
+md"### Markets for single goods"
 
 # ╔═╡ 4c7f60b4-0be4-44ec-af97-af65e00ee9b8
 md" Often, we think of individuals interacting through markets. Policies like rent controls may change the prices individuals face in markets, and thus the allocation of goods across individuals."
@@ -387,7 +387,7 @@ begin
 end
 
 # ╔═╡ f502e09b-da54-4993-a57f-de85f30a77a5
-md" ## Markets with multiple goods"
+md" ### Markets with multiple goods"
 
 # ╔═╡ f1873a2a-cb20-40d5-8cab-ba283421575d
 md" In reality, an economy is not composed of a single good, but instead sets of individuals making trades across multiple different markets. Price changes in one market change the marginal rate of substitution between goods, so change quantities demanded and supplied in other markets. We model these interlocking markets by looking for prices and quantities that **clear all markets** at once, and where **all individuals maximise their utility**. These kinds of models are called **general equilibrium** models.
@@ -477,7 +477,7 @@ end
 md" The important point to note here, is that **changes in one market cause changes in the optimal consumption bundles across all other markets through a change in the optimal prices**. These are called **general equilibrium effects**, and are important when we consider the indirect effects of policy." 
 
 # ╔═╡ 95163626-4895-4006-94e7-f3055fd803d7
-md"## Welfare economics, first-best, and second-best policies"
+md"### Welfare economics, first-best, and second-best policies"
 
 # ╔═╡ 24f4899e-664f-45dd-a81f-bf940a852296
 md" To assess policies, we first need a rough moral framework to say what is **good**. We can make a lot of different choices here. It is natural to assume **consequentialism** - that the things that a make a policy better or worse are some set of its outcomes. Next, we need to pick which outcomes we care about. **Hedonism** is the view that what matters is the sum total of happiness. **Welfarism** is the view that what matters is whether individuals are better or worse off in some sense (e.g richer). The **preference satisfaction** view says that what matters is whether individuals get what they prefer. Finally, we need to pick how much we care about each individual. **Agent neutrality** says that the outcomes of all individuals count equally, regardless of their initial endowments. The **priority view** says that we should maximise the sum total of outcomes, weighting the outcomes for those with smaller endowments more. **Egalitarian** considerations say that we should weight outcomes where individuals are more equal by more.  
@@ -1477,7 +1477,7 @@ version = "1.4.1+0"
 # ╟─e1c21122-e864-46f0-b1ad-968c18ab7871
 # ╟─731b0807-9e06-408b-ab16-7a02acbaff8a
 # ╟─94f7a9e4-8a03-47db-8a32-8fd7cdbaa818
-# ╟─efd5cfd1-a999-4a4f-a023-20f65dd27932
+# ╠═efd5cfd1-a999-4a4f-a023-20f65dd27932
 # ╟─ccdc813c-92e3-44f2-89bb-2468c3397174
 # ╟─79044cfa-1999-43b6-8688-d3b974906721
 # ╟─3009ec39-2521-4f17-9ebb-2888341a0214
@@ -1499,11 +1499,11 @@ version = "1.4.1+0"
 # ╟─0320a0a7-2939-4a94-897e-dad42221ffeb
 # ╟─2ee13245-77f4-4e51-9834-706c6e4fe13f
 # ╟─27a220de-b5a1-4b42-91f8-2124ab12d82a
-# ╟─2a0a09d7-b27f-4727-bdec-425ea3038ac0
+# ╠═2a0a09d7-b27f-4727-bdec-425ea3038ac0
 # ╟─0dd43d28-7eac-483f-97ab-e265cbeff8b7
 # ╟─89856ce2-94a7-4282-b44a-fc3014f18ca3
 # ╟─fdd48ef6-7c1c-466b-b86d-3b959dc60920
-# ╟─fdcc8192-ce09-4ea6-8519-73f9a7d0796a
+# ╠═fdcc8192-ce09-4ea6-8519-73f9a7d0796a
 # ╟─4c7f60b4-0be4-44ec-af97-af65e00ee9b8
 # ╟─d771bc92-f545-4c95-ac93-db8f7968c58d
 # ╟─d7629b9c-e55a-44a4-816a-4d6703112b5f
@@ -1516,13 +1516,13 @@ version = "1.4.1+0"
 # ╟─8da868bf-284c-4c11-b93e-0ded9c32b71e
 # ╟─6645b31f-2452-4ec2-9a46-73bb777b3c38
 # ╟─5bd00758-c8cd-419a-b5b1-5afd406786d9
-# ╟─f502e09b-da54-4993-a57f-de85f30a77a5
+# ╠═f502e09b-da54-4993-a57f-de85f30a77a5
 # ╟─f1873a2a-cb20-40d5-8cab-ba283421575d
 # ╟─a3967891-535d-4e18-92be-a9644e5ca445
 # ╟─abea3414-1326-4c2d-848f-c5f17211e3e9
 # ╟─82bfe529-6967-4461-af60-1bba8aa6a2f7
 # ╟─fa749020-2746-472e-b285-32690fca9540
-# ╟─95163626-4895-4006-94e7-f3055fd803d7
+# ╠═95163626-4895-4006-94e7-f3055fd803d7
 # ╟─24f4899e-664f-45dd-a81f-bf940a852296
 # ╟─64a79662-40a3-4e7c-9d0a-fbf5ca45713b
 # ╟─f520ab39-4b9b-4779-9492-4419a29dd0e7
