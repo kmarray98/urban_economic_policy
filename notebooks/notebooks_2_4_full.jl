@@ -20,6 +20,9 @@ md" ### Full model"
 # ╔═╡ 430c2b71-01f6-4720-b220-eb5780cfe914
 using PlutoUI, Plots, Random, Optim, Distributions
 
+# ╔═╡ 43257edf-fec9-4847-9c52-fe341d42b001
+rng = MersenneTwister(2022)
+
 # ╔═╡ 5b38ac9b-20c1-4906-ac9b-c08b549986a0
 md" Now lets combine all elements into a simple version of the sorting model in Bayer et al. There are two neighbourhoods, neighbourhood 1 which runs from $(0, 0.5)$ and neighbourhood 2, which runs from $[0.5, 1)$. Assume house unobservables vary by neighbourhood, as do house prices. House prices also depend on some price shifter that is independent of the neighbourhood indicator (in the paper, this is prices 3 miles away)."
 
@@ -105,6 +108,16 @@ end
 
 # ╔═╡ 06213472-00f8-4a94-8707-1b7498d0e65a
 md" With these, we can generate the common components of the utilities by location."
+
+# ╔═╡ 6b09561a-8429-4208-9251-2e7d598d430d
+begin
+
+	delta_1 = a0_size .* X1 .+ a0_test .* test1 .- a0_p .* p1
+	delta_2 = a0_size .* X2 .+ a0_test .* test2 .- a0_p .* p2
+
+	Print("Common utility of location 1 is "  * string(delta_1) * ", and common utility of location 2 is " * string(delta_2) *",")
+
+end
 
 # ╔═╡ f85ac410-de81-4bfd-9f45-d1ce350d0d47
 md" and the portion that varies by type"
@@ -1300,12 +1313,14 @@ version = "1.4.1+0"
 # ╟─f5450eab-0f9f-4b7f-9b80-992d3c553ba9
 # ╟─ccd9b6a0-a545-11ed-0896-4bf217dd8aef
 # ╠═430c2b71-01f6-4720-b220-eb5780cfe914
+# ╠═43257edf-fec9-4847-9c52-fe341d42b001
 # ╠═5b38ac9b-20c1-4906-ac9b-c08b549986a0
 # ╠═523b6ace-7300-4daf-86cd-67b32ce31799
 # ╠═f3fe2871-6646-439b-839c-60cbfaee72d8
 # ╠═50207527-75c2-4098-90b2-7859b01ef7d4
 # ╠═031c0633-3cd8-4ed0-9818-1767bfc69d1a
 # ╠═06213472-00f8-4a94-8707-1b7498d0e65a
+# ╠═6b09561a-8429-4208-9251-2e7d598d430d
 # ╠═f85ac410-de81-4bfd-9f45-d1ce350d0d47
 # ╠═bd449115-d58c-490b-b1f5-e96fe18125a6
 # ╠═eaa74507-553f-4230-a32d-ddd87c72f870
