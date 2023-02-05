@@ -18,11 +18,17 @@
     },
 	
     {
-        "title": "Assignment 1",
+        "title": "Hedonic pricing",
         "contents": [
             {
-                "name": "Hedonic pricing",
-                "notebook_path": "notebooks/1_rosen.jl",
+                "name": "Theory",
+                "notebook_path": "notebooks/1_theory.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            },
+		{
+                "name": "Estimation",
+                "notebook_path": "notebooks/1_2_est.jl",
                 "video_id": "",
                 "preview_image_url": ""
             }
