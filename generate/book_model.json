@@ -30,14 +30,32 @@
     },	
 	
     {
-        "title": "Assignment 2",
+        "title": "Sorting models",
         "contents": [
             {
-                "name": "Sorting models",
-                "notebook_path": "notebooks/2_bayer.jl",
+                "name": "Boundary discontinuities",
+                "notebook_path": "notebooks/2_1_boundaries.jl",
                 "video_id": "",
                 "preview_image_url": ""
-            }
+            },
+            {
+                "name": "Simple sorting",
+                "notebook_path": "notebooks/2_2_sorting.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            },	
+            {
+                "name": "Simultaneity",
+                "notebook_path": "notebooks/2_3_shocks.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            },
+            {
+                "name": "Full model",
+                "notebook_path": "notebooks/2_4_full.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            }		
         ]
     }
 ]
