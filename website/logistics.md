@@ -2,6 +2,8 @@
 
 ## Tutorials
 
+Tutorials are in room MF-BK43 on:
+
 + Friday 10th of February, 11-12.30 am
 + Friday 17th of February, 9-10.45 am
 + Friday 24th of February, 9-10.45 am
