@@ -14,44 +14,23 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 97b82a10-919f-11ed-3013-07f52473d7d9
-md" # Hedonic pricing"
+# ╔═╡ 09285ef0-a554-11ed-347b-5b0e8361377c
+md" ### Estimating hedonic price functions"
 
-# ╔═╡ c1a1fbcb-5f36-446c-ae17-49543652760b
-using PlutoUI,  Plots; plotly(size=(360,360))
+# ╔═╡ 206c254f-6527-4b62-9586-3c438c65ff3f
+using PlutoUI,  Random, Distributions,Plots; plotly(size=(360,360))
 
-# ╔═╡ a6492cd7-140e-4aab-accc-19f9845d94fd
-md" Here we present the idea of hedonic pricing as in the first part of section 2 of the Koster and Rouwendal paper on the reading list."
+# ╔═╡ 2268c0d4-4b7d-4bf6-b1c4-5393e65a8a32
+md"Assume we have the value funcion and price function from before."
 
-# ╔═╡ 3e9131cf-c5b2-4464-9b5d-4efc9eb5f992
-md" We have two goods: housing $k$ and the 'composite good' $q$ i.e everything else. Assume a logarithmic utility function
-```math
-u(k,q) = \ln{q} + \gamma \ln{k}.
-```
-
-The budget constraint is
-
-```math
-q + p(k) = y
-```
-
-where p(k) is the pricing function for housing relative to the price index for everything else. Specifically, assume house prices are linear in quality
-
-```math
-p(k) = \alpha + \beta_{1} k.
-```
-"
-
-# ╔═╡ 543f0868-c0b8-440d-8b52-bc7493e0bb74
+# ╔═╡ 9d01db43-2909-4ea8-a510-13c5515dda6c
 begin
-	u_slide = @bind u Slider(0.01:0.1:7.0, 0.1, true)
 	gamma_slide = @bind gamma Slider(0.01:0.1:2.0, 0.5, true)
 	a_slide = @bind a Slider(0.0:0.1:1.0, 0.5, true)
 	b1_slide = @bind b1 Slider(0.0:0.01:0.2, 0.1, true)
 	y_slide = @bind y Slider(10.0:0.1:20.0, 15.0, true)
 
 	md"Variables: \
-	utility: $(u_slide) \
 	gamma : $(gamma_slide) \
 	alpha: $(a_slide) \
 	beta\_1: $(b1_slide) \
@@ -59,60 +38,10 @@ begin
 	"
 end
 
-# ╔═╡ c327853d-76b3-494e-ad17-39ee7c2c0d7e
+# ╔═╡ d9d1936b-3d58-460b-ac67-a882b672a468
 begin
-	k = collect(0:0.1:80)
-	util = exp.(u .- gamma .* log.(k))
-	plot(k, util, lims = (0, 80),
-	label="Indifference curve", linecolor=:red, lw=2)
-	xlabel!("Housing quality")
-	ylabel!("Other good")
-end
-
-# ╔═╡ 49d4644e-18d5-442e-b943-de5b79b5b97e
-begin
-
+    k = collect(0:0.1:80)
 	price = a .+ (b1 .* k)
-
-	#Print(b2)
-
-	plot(k, price, lims = (0, 80), label="Price function", linecolor=:green, lw=2)
-	xlabel!("Housing quality")
-	ylabel!("Price")
-
-end
-
-# ╔═╡ afc30b37-3536-4a82-8266-feb5f0703167
-md" ### Estimating hedonic price functions"
-
-# ╔═╡ 4ae0dcf0-61ac-42c6-88c6-59941ab2b2f7
-md"Remembering that our expression for the value function is
-
-```math
-P = y-u^{-1}(u^{*}, k),
-```
-
-we have the value function
-
-```math
-P = y - e^{(u^{*} - \gamma \ln{k})}.
-```
-"
-
-# ╔═╡ 5322e8a6-9612-4988-8c3d-ee269c715026
-begin
-
-	val = y .- exp.(u .- gamma .* log.(k))
-	plot(k, val, lims=(4, 40), label="Value function", linecolor=:red, lw=2)
-	xlabel!("Housing quality")
-	ylabel!("WTP")
-end
-
-# ╔═╡ fc577c32-2149-4ee9-af33-aecb145fd8e9
-md" Then we can find the optimal price as the intersection of these two functions"
-
-# ╔═╡ 790c351a-ed50-4a3f-87d6-5bb553516925
-begin
 
 	u_opts = log.(y .-a .- b1 .* k) + gamma .* log.(k)
 	u_max = maximum(u_opts) # utility maximising point
@@ -133,14 +62,18 @@ begin
 
 	#val_opt = y .- exp.(u_opt .- gamma .* log.(k))
 
-	plot(k, val_opt, lims=(4, 80), label="Value function", linecolor=:red, lw=2)
-	plot!(k, price, lims = (0, 80), label="Price function", linecolor=:green, lw=2)
+	plot(k, val_opt, xlims=(0, 80), ylims=(0,10), label="Value function", linecolor=:red, lw=2)
+	plot!(k, price, xlims = (0, 80), ylims=(0,10), label="Price function", linecolor=:green, lw=2)
+
 end
 
-# ╔═╡ 2d4d481a-8a8a-4df1-90ed-2320102107b3
-md" which gives us the observed hedonic price for one consumer. If we have a set of different observed price-quantity points here, it will trace out the price function! So we can then estimate the price. For example, with $\gamma$ between 0.1 and 1 we get the following points, that trace out our price function."
+# ╔═╡ d3a3c366-1b61-411d-9da6-041aba960bad
+md" We observe **prices that people pay** for a house - i.e **the intersection of the value function and the price function**. Our aim is to back out the price function. Specifically, our estimands will be the parameters of the price function assuming a functional form (or equivalently an elasticity)."
 
-# ╔═╡ d84b0a86-b88a-4d99-9d39-3f60161391c5
+# ╔═╡ c8834a2f-11e3-4bf1-9796-e01063236149
+md" To estimate paramters, we need variation in the price paid - i.e a set of different observed price-quality points. If we have a set of different observed price-quantity points here, it will trace out the price function! So we can then estimate our parameters. For example, if we simulate a grid of preferences with $\gamma$ between 0.1 and 1 at intervals of 0.02 we get the following observed prices and quantities"
+
+# ╔═╡ e4aaf845-af5c-4670-a765-341504f067d5
 begin
 
 	#plot(k, price, lims = (0, 80), label="Price function", linecolor=:green, lw=2)
@@ -163,23 +96,83 @@ begin
 
 	end
 
-	
-
-	scatter(k_vec, p_vec, label="Observed prices", ylims=(0,80))
+	scatter(k_vec, p_vec, label="Observed prices", ylims=(0,10))
 
 end
 
-# ╔═╡ eaff9f68-f15a-4240-a67e-ecc75d867c78
-md" Once we have data that traces out the price function, we can then estimate the parameters in the function by fitting our favourite regression model e.g OLS. These estimates allow us to compute price elasticities."
+# ╔═╡ d0139ba9-2d37-491a-b259-ef085d4cb38f
+md" Now, if we fit an OLS regression of prices on quality, we get parameter estimates"
+
+# ╔═╡ 1e58e7c4-38be-4eca-bb62-41dfa9e1cc29
+begin
+	d_mat = [ones(91) k_vec]
+	params = (d_mat'*d_mat)^-1 * d_mat' * p_vec
+	Print(params)
+end
+
+# ╔═╡ 60b73c90-91ac-464f-aa64-b9a146f3b3fa
+md"which are quite close to what we need."
+
+# ╔═╡ d88f04de-7f2e-43a4-b0ac-f08bb077d0aa
+begin
+
+	fitted_p = d_mat * params
+
+	scatter(k_vec, p_vec, label="Observed prices", ylims=(0,10), alpha=0.3)
+	plot!(k_vec, fitted_p, lwd=20, label="OLS fit", color=:red)
+
+end
+
+# ╔═╡ 51b8ed09-3f91-420c-8ee3-b67c4d6ce741
+md" Of course, such a nice fit is a little unrealistic (as we have simulated prices and quantities without simulating any unobserved errors etc). If we add a little noise in obseved prices we get"
+
+# ╔═╡ c1ea1a90-2162-4fe2-91f7-8893cd202d42
+begin
+
+	g_vec_n = collect(0.1:0.01:1)
+	p_vec_n = zeros(91)
+	k_vec_n = zeros(91)
+
+	rng= MersenneTwister(2022)
+
+	eps_d = Normal(0, 0.5)
+	eps_vec = rand(rng, eps_d, 91)
+
+	for i in 1:length(g_vec_n)
+		#print(i)
+		g = g_vec_n[i]
+
+	    u_opts = log.(y .-a .- b1 .* k) + g .* log.(k)
+	    u_max = maximum(u_opts) # utility maximising point
+	    u_max_place = findmax(u_opts)[2]
+		k_max =  k[u_max_place]
+	    k_vec_n[i] = k_max
+		p_vec_n[i] = a + b1 * k_max + eps_vec[i]
+
+	end
+
+	scatter(k_vec_n, p_vec_n, label="Observed prices", ylims=(0,10))
+
+	params_n = (d_mat'*d_mat)^-1 * d_mat' * p_vec_n
+
+	fitted_p_n = d_mat * params_n
+
+	scatter(k_vec, p_vec_n, label="Observed prices", ylims=(0,10), alpha=0.3)
+	plot!(k_vec, fitted_p_n, lwd=20, label="OLS fit", color=:red)
+
+end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 
 [compat]
-Plots = "~1.38.1"
+Distributions = "~0.25.80"
+Plots = "~1.38.2"
 PlutoUI = "~0.7.49"
 """
 
@@ -222,11 +215,17 @@ git-tree-sha1 = "4b859a208b2397a7a623a03449e4636bdb17bcf2"
 uuid = "83423d85-b0ee-5818-9007-b63ccbeb887a"
 version = "1.16.1+1"
 
+[[deps.Calculus]]
+deps = ["LinearAlgebra"]
+git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
+uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
+version = "0.5.1"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "e7ff6cadf743c098e08fca25c91103ee4303c9bb"
+git-tree-sha1 = "c6d890a52d2c4d55d326439580c3b8d0875a77d9"
 uuid = "d360d2e6-b24c-11e9-a2a3-2a2ae2dbcce4"
-version = "1.15.6"
+version = "1.15.7"
 
 [[deps.ChangesOfVariables]]
 deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
@@ -298,6 +297,18 @@ uuid = "ade2ca70-3891-5945-98fb-dc099432e06a"
 deps = ["Mmap"]
 uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
+[[deps.DensityInterface]]
+deps = ["InverseFunctions", "Test"]
+git-tree-sha1 = "80c3e8639e3353e5d2912fb3a1916b8455e2494b"
+uuid = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
+version = "0.4.0"
+
+[[deps.Distributions]]
+deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
+git-tree-sha1 = "74911ad88921455c6afcad1eefa12bd7b1724631"
+uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
+version = "0.25.80"
+
 [[deps.DocStringExtensions]]
 deps = ["LibGit2"]
 git-tree-sha1 = "2fb1e02f2b635d0845df5d7c167fec4dd739b00d"
@@ -307,6 +318,12 @@ version = "0.9.3"
 [[deps.Downloads]]
 deps = ["ArgTools", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
+
+[[deps.DualNumbers]]
+deps = ["Calculus", "NaNMath", "SpecialFunctions"]
+git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
+uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
+version = "0.6.8"
 
 [[deps.Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -325,6 +342,12 @@ deps = ["Artifacts", "Bzip2_jll", "FreeType2_jll", "FriBidi_jll", "JLLWrappers",
 git-tree-sha1 = "74faea50c1d007c85837327f6775bea60b5492dd"
 uuid = "b22a6f82-2f65-5046-a5b2-351ab43fb4e5"
 version = "4.4.2+2"
+
+[[deps.FillArrays]]
+deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
+git-tree-sha1 = "9a0472ec2f5409db243160a8b030f94c380167a3"
+uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
+version = "0.13.6"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
@@ -399,15 +422,21 @@ version = "1.0.2"
 
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "Dates", "IniFile", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
-git-tree-sha1 = "fd9861adba6b9ae4b42582032d0936d456c8602d"
+git-tree-sha1 = "eb5aa5e3b500e191763d35198f859e4b40fff4a6"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "1.6.3"
+version = "1.7.3"
 
 [[deps.HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
 git-tree-sha1 = "129acf094d168394e80ee1dc4bc06ec835e510a3"
 uuid = "2e76f6c2-a576-52d4-95c1-20adfe4de566"
 version = "2.8.1+1"
+
+[[deps.HypergeometricFunctions]]
+deps = ["DualNumbers", "LinearAlgebra", "OpenLibm_jll", "SpecialFunctions", "Test"]
+git-tree-sha1 = "709d864e3ed6e3545230601f94e11ebc65994641"
+uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
+version = "0.3.11"
 
 [[deps.Hyperscript]]
 deps = ["Test"]
@@ -653,9 +682,9 @@ uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "OpenSSL_jll", "Sockets"]
-git-tree-sha1 = "df6830e37943c7aaa10023471ca47fb3065cc3c4"
+git-tree-sha1 = "6503b77492fd7fcb9379bf73cd31035670e3c509"
 uuid = "4d8831e6-92b7-49fb-bdf8-b643e874388c"
-version = "1.3.2"
+version = "1.3.3"
 
 [[deps.OpenSSL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -684,11 +713,17 @@ version = "1.4.1"
 deps = ["Artifacts", "Libdl"]
 uuid = "efcefdf7-47ab-520b-bdef-62a2eaa19f15"
 
+[[deps.PDMats]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
+git-tree-sha1 = "cf494dca75a69712a72b80bc48f59dcf3dea63ec"
+uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
+version = "0.11.16"
+
 [[deps.Parsers]]
 deps = ["Dates", "SnoopPrecompile"]
-git-tree-sha1 = "6466e524967496866901a78fca3f2e9ea445a559"
+git-tree-sha1 = "8175fc2b118a3755113c8e68084dc1a9e63c61ee"
 uuid = "69de0a69-1ddd-5017-9359-2bf0b02dc9f0"
-version = "2.5.2"
+version = "2.5.3"
 
 [[deps.Pipe]]
 git-tree-sha1 = "6842804e7867b115ca9de748a0cf6b364523c16d"
@@ -719,9 +754,9 @@ version = "1.3.2"
 
 [[deps.Plots]]
 deps = ["Base64", "Contour", "Dates", "Downloads", "FFMPEG", "FixedPointNumbers", "GR", "JLFzf", "JSON", "LaTeXStrings", "Latexify", "LinearAlgebra", "Measures", "NaNMath", "Pkg", "PlotThemes", "PlotUtils", "Preferences", "Printf", "REPL", "Random", "RecipesBase", "RecipesPipeline", "Reexport", "RelocatableFolders", "Requires", "Scratch", "Showoff", "SnoopPrecompile", "SparseArrays", "Statistics", "StatsBase", "UUIDs", "UnicodeFun", "Unzip"]
-git-tree-sha1 = "02ecc6a3427e7edfff1cebcf66c1f93dd77760ec"
+git-tree-sha1 = "a99bbd3664bb12a775cda2eba7f3b2facf3dad94"
 uuid = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
-version = "1.38.1"
+version = "1.38.2"
 
 [[deps.PlutoUI]]
 deps = ["AbstractPlutoDingetjes", "Base64", "ColorTypes", "Dates", "FixedPointNumbers", "Hyperscript", "HypertextLiteral", "IOCapture", "InteractiveUtils", "JSON", "Logging", "MIMEs", "Markdown", "Random", "Reexport", "URIs", "UUIDs"]
@@ -744,6 +779,12 @@ deps = ["Artifacts", "CompilerSupportLibraries_jll", "Fontconfig_jll", "Glib_jll
 git-tree-sha1 = "0c03844e2231e12fda4d0086fd7cbe4098ee8dc5"
 uuid = "ea2cea3b-5b76-57ae-a6ef-0a8af62496e1"
 version = "5.15.3+2"
+
+[[deps.QuadGK]]
+deps = ["DataStructures", "LinearAlgebra"]
+git-tree-sha1 = "de191bc385072cc6c7ed3ffdc1caeed3f22c74d4"
+uuid = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
+version = "2.7.0"
 
 [[deps.REPL]]
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
@@ -782,6 +823,18 @@ git-tree-sha1 = "838a3a4188e2ded87a4f9f184b4b0d78a1e91cb7"
 uuid = "ae029012-a4dd-5104-9daa-d747884805df"
 version = "1.3.0"
 
+[[deps.Rmath]]
+deps = ["Random", "Rmath_jll"]
+git-tree-sha1 = "bf3188feca147ce108c76ad82c2792c57abe7b1f"
+uuid = "79098fc4-a85e-5d69-aa6a-4863f24498fa"
+version = "0.7.0"
+
+[[deps.Rmath_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "68db32dff12bb6127bac73c209881191bf0efbb7"
+uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
+version = "0.3.0+0"
+
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"
 
@@ -806,9 +859,10 @@ uuid = "777ac1f9-54b0-4bf8-805c-2214025038e7"
 version = "1.1.0"
 
 [[deps.SnoopPrecompile]]
-git-tree-sha1 = "f604441450a3c0569830946e5b33b78c928e1a85"
+deps = ["Preferences"]
+git-tree-sha1 = "e760a70afdcd461cf01a575947738d359234665c"
 uuid = "66db9d55-30c0-4569-8b51-7e840670fc0c"
-version = "1.0.1"
+version = "1.0.3"
 
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
@@ -844,6 +898,16 @@ deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missin
 git-tree-sha1 = "d1bf48bfcc554a3761a133fe3a9bb01488e06916"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 version = "0.33.21"
+
+[[deps.StatsFuns]]
+deps = ["ChainRulesCore", "HypergeometricFunctions", "InverseFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
+git-tree-sha1 = "ab6083f09b3e617e34a956b43e9d51b824206932"
+uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
+version = "1.1.1"
+
+[[deps.SuiteSparse]]
+deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
+uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1126,20 +1190,19 @@ version = "1.4.1+0"
 
 # ╔═╡ Cell order:
 # ╟─f5450eab-0f9f-4b7f-9b80-992d3c553ba9
-# ╟─97b82a10-919f-11ed-3013-07f52473d7d9
-# ╟─c1a1fbcb-5f36-446c-ae17-49543652760b
-# ╟─a6492cd7-140e-4aab-accc-19f9845d94fd
-# ╟─3e9131cf-c5b2-4464-9b5d-4efc9eb5f992
-# ╠═543f0868-c0b8-440d-8b52-bc7493e0bb74
-# ╠═c327853d-76b3-494e-ad17-39ee7c2c0d7e
-# ╠═49d4644e-18d5-442e-b943-de5b79b5b97e
-# ╠═afc30b37-3536-4a82-8266-feb5f0703167
-# ╟─4ae0dcf0-61ac-42c6-88c6-59941ab2b2f7
-# ╟─5322e8a6-9612-4988-8c3d-ee269c715026
-# ╟─fc577c32-2149-4ee9-af33-aecb145fd8e9
-# ╟─790c351a-ed50-4a3f-87d6-5bb553516925
-# ╟─2d4d481a-8a8a-4df1-90ed-2320102107b3
-# ╟─d84b0a86-b88a-4d99-9d39-3f60161391c5
-# ╟─eaff9f68-f15a-4240-a67e-ecc75d867c78
+# ╟─09285ef0-a554-11ed-347b-5b0e8361377c
+# ╟─206c254f-6527-4b62-9586-3c438c65ff3f
+# ╟─2268c0d4-4b7d-4bf6-b1c4-5393e65a8a32
+# ╟─9d01db43-2909-4ea8-a510-13c5515dda6c
+# ╟─d9d1936b-3d58-460b-ac67-a882b672a468
+# ╟─d3a3c366-1b61-411d-9da6-041aba960bad
+# ╟─c8834a2f-11e3-4bf1-9796-e01063236149
+# ╟─e4aaf845-af5c-4670-a765-341504f067d5
+# ╟─d0139ba9-2d37-491a-b259-ef085d4cb38f
+# ╟─1e58e7c4-38be-4eca-bb62-41dfa9e1cc29
+# ╟─60b73c90-91ac-464f-aa64-b9a146f3b3fa
+# ╟─d88f04de-7f2e-43a4-b0ac-f08bb077d0aa
+# ╟─51b8ed09-3f91-420c-8ee3-b67c4d6ce741
+# ╟─c1ea1a90-2162-4fe2-91f7-8893cd202d42
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
