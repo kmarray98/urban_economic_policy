@@ -14,32 +14,19 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 29f29120-998b-11ed-1a33-4568dfd71ac1
-md"# Sorting models for neighbourhood choice"
+# ╔═╡ edcbe54e-96cb-405e-9ada-6140df4ec029
+md" ### Individual preferences over houses can cause sorting into neighbourhoods"
 
-# ╔═╡ a58a0206-9de2-4351-9396-5533ec7486bf
+# ╔═╡ 9544ec67-4a1f-4dd9-a1d6-f5eff8d60ae9
 using PlutoUI, Plots, Random, Optim, Distributions
 
-# ╔═╡ 89069f95-c70b-4add-8fac-083c60bb03cf
-md" Here, we simulate simple versions of the sorting model we cover to illustrate mechanisms. Do not worry if you find the Bayer et al. paper hard! This is a hard paper, especially if you have not had much econometrics before. So, to understand exactly how the model works, we will simulate some data from toy versions of the model step-by-step and build up to the full model. We leave estimation to the assignment.
+# ╔═╡ ea1a3b39-c045-44c7-a788-b294e7f99af6
+md" To illustrate the mechanisms at play, we start by simulating a little toy model the choice of individual houses when houses differ across neighbourhoods. We will see that, depending on parameters, individual choice can lead to sorting into neighbourhoods.
 
-In the assignment, we model how households choose houses in **different neighbourhoods**. We include **house-type specific variables**, and **neighbourhood specific variables**. To model heterogeneity, we let the effects of some variable **vary by the type of individual**.
-
-We proceed as follows.
-+ First, we illustrate the idea of boundary discontinuities that comes up in the paper.
-+ Second, we will illustrate how individuals preferences over houses may lead them to sort into different neighbourhoods. 
-+ Third, we briefly discuss the correlation of prices and unobservable taste shocks in the model. 
-+ Fourth, we develop a full model of neighbourhood choice. 
-
+Assume we observe the same ten houses as in the previous notebook across two neighbourhoods.
 "
 
-# ╔═╡ ef65527d-0ba3-40e6-aae0-0f761c9bd800
-md" ### Boundary discontinuities."
-
-# ╔═╡ d7a73788-994a-432d-a022-2fc26dcbf534
-md" The idea of a boundary discontinuity design is that houses near a district boundary are similar on all but one characterstic, which varies sharply over the boundary. So we can isolate the effect of the characteristic that varies sharply on, for example, house prices by comparing houses that just sit on one side of the boundary or another. This is a species of the **discontinuity design** we saw in the econometrics refresher."
-
-# ╔═╡ 7054a01e-dcac-4036-85dd-fef6178c071f
+# ╔═╡ 72d012c2-b1dc-435b-9275-ed72de71a992
 begin
 
 	rng = MersenneTwister(2025)
@@ -47,17 +34,20 @@ begin
     h_dist = Uniform()
 	h_loc = rand(rng, h_dist, 10)
 	sort!(h_loc)
-
-	
-
 	histogram(h_loc, label="House count", alpha=0.3, bins=5)
 	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
 end
 
-# ╔═╡ 0a6d4439-2109-4add-9386-4ad376f75510
-md" To keep things simple, assume that there is only one house level characteristic, size, and one neighbourhood level characteristic, test score. Houses size varies smoothly across space but the mean test score changes sharply across neighbourhoods."
+# ╔═╡ e0cebbb5-09fa-4964-8537-bc29167aca6e
+md" Lets set some housing choice characteristics. To keep things simple, we use the same chaacteristics as before. Again, we assume that there is only one house characteristic, size, and one neighbourhood characteristic, test score. Houses in the first neighbourhood are smaller but the mean test score is higher."
 
-# ╔═╡ 0f9fded5-f50c-4231-a49b-4aec3631ae90
+# ╔═╡ dcf44570-7bdd-4162-9930-81bb26f1f32b
+begin
+	delta_score_slide = @bind delta_score Slider(0:0.01:1.0, 0.5, true)
+	md"delta\_score: $(delta_score_slide)"
+end
+
+# ╔═╡ e0f03f0a-45d1-4b84-ad3b-0c289ed3d803
 begin
 
 	s_dist = Normal(0,0.25)
@@ -65,147 +55,28 @@ begin
 
 	sizes = 4 .* h_loc .+ size_shock 
 
-	scatter(h_loc, sizes, label="House sizes")
-	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
-
-end
-
-# ╔═╡ 5921bc78-7c18-46e5-a93a-55b24f3d5672
-begin
-
 	scores = ones(10)
 	scores[h_loc .< 0.5] .= 5
 
-	scatter(h_loc, scores, label="Mean test score", ylims=(0,6))
-	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
-
-end
-
-# ╔═╡ 99363bf0-673d-4829-a8f1-b48c6c7bef7e
-md" Assume prices are log-linear in characteristics
-
-```math
-\ln{\text{price}_{h}} = \alpha_{0} + \delta_{\text{score}}\text{score}_{h} + \delta_{\text{size}}\text{size}_{h}.
-```
-
-Our prices are
-"
-
-# ╔═╡ e6eab0d0-bd2e-4fde-bf09-4e248e82fca5
-begin
-	delta_score_slide = @bind delta_score Slider(0:0.01:1.0, 0.5, true)
-	md"delta\_score: $(delta_score_slide)"
-end
-	
-
-# ╔═╡ 28781c2f-2894-40d2-b863-69112b7b6141
-begin
     a_0_price = 2
 	delta_size = 0.5	
 
 	ln_price = a_0_price .+ delta_score .* scores .+ delta_size .* sizes
 
-	scatter(h_loc, ln_price, label="House prices", ylims=(0,8))
-
-	
-end
-
-# ╔═╡ 878e7dbd-1c3f-4477-ae65-79f04361c062
-md" Assume that **we do not observe sizes**. We need an estimator for $\delta_{\text{score}}$ but we cannot run the 'true' hedonic price regression. 
-
-If we take the prices of houses near the boundary (here between 0.4 and 0.6), because size varies smoothly across the district we can assume that **observed differences are due to differences in mean test scores**. So we can get the effect of test scores by comparing the differences between the mean prices of the houses just either side of the boundary
-
-```math
-\hat{\delta}_{\text{score}} = \frac{\frac{\sum_{i \in h_{l}}(price_{i})}{|h_{l}|} - \frac{\sum_{j \in h_{r}}(price_{j})}{|h_{r}|}}{\text{score}_{l} - \text{score}_{r}},
-```
-
-where $h_{l}$ is the set of houses left of the boundary, $h_{r}$ is the set of houses right of the boundary, and $|.|$ denotes the number of houses in each set (the cardinality of the set). In a **regression**, we do this by **including a dummy for just being on the higher side of the boundary**.
-
-
-"
-
-# ╔═╡ bad7564a-4fd6-4223-b021-b1906c5feddc
-begin
-
-	scatter(h_loc, ln_price, label="House prices")
-	vline!([0.5], color=:red, label="Neighbourhood boundary")
-	vline!([0.4], color=:green, label="")
-	vline!([0.6], color=:green, label="")
-end
-
-# ╔═╡ ab68c928-5aad-447b-a4f7-04020355f304
-begin
-   Print("Boundary discontinuity estimate is: " * string((mean(ln_price[4:5]) .- ln_price[6])/(mean(scores[4:5] .- scores[6]))))
-end
-
-# ╔═╡ cd7632be-ac94-4604-822b-4309ebb6afb7
-md" Notice that this will not work when the unobserved thing does not vary smoothly across the boundary. Then, differences across the boundary are due to both test scores and a jump in the unobservable across the boundary, so the estimated parameter will be a mixture of both effects. For example, if sizes are also unobserved and jumpy around the discontinuity like below"
-
-# ╔═╡ e93867f5-c2b4-4f81-a3c8-76f0c9a3f3dd
-begin
-
-	jumps = ones(10)
-	jumps[h_loc .< 0.5] .= 6
-
-	jumpy_sizes = jumps .+ size_shock 
-
-	scatter(h_loc, jumpy_sizes, label="Jumpy house sizes")
-	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
-
-end
-
-# ╔═╡ a193d4a5-bc43-480d-ad42-d07254776690
-md" then our boundary discontinuity estimates with the new generated prices are very wrong because the houses either side of the boundary are not comparable on the unobserved sizes!"
-
-# ╔═╡ b7135550-9504-4deb-b876-ab7653bfc140
-begin
-
-	ln_jumpy_price = a_0_price .+ delta_score .* scores .+ delta_size .* jumpy_sizes
-	   Print("Boundary discontinuity estimate with jumpy latent variable is: " * string((mean(ln_jumpy_price[4:5]) .- ln_jumpy_price[6])/(mean(scores[4:5] .- scores[6]))))
-
-end
-
-# ╔═╡ 7c61a350-8a9c-4cfc-bd31-52653aa12ee0
-md" ### Individual preferences over houses can cause sorting into neighbourhoods"
-
-# ╔═╡ 41c08ea2-e0eb-426b-a2a9-ef9716efece7
-md" To illustrate the mechanisms at play, we start by simulating a little toy model the choice of individual houses when houses differ across neighbourhoods. We will see that, depending on parameters, individual choice can lead to sorting into neighbourhoods."
-
-# ╔═╡ 30651f0f-fc94-454e-9b24-dc13fb6bb212
-md" Assume we observe the same ten houses as above across two neighbourhoods."
-
-# ╔═╡ 2da940ce-bae2-49d3-a60e-c762452ee106
-begin
-
-	histogram(h_loc, label="House count", alpha=0.3, bins=5)
+    scatter(h_loc, scores, label="Mean test score", ylims=(0,6))
 	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
 end
 
-
-	
-
-# ╔═╡ 774d82a4-6a21-4ac4-8119-4f25b3678e3d
-md" Lets set some housing choice characteristics. To keep things simple, we use the same chaacteristics as before. Again, we assume that there is only one house characteristic, size, and one neighbourhood characteristic, test score. Houses in the first neighbourhood are smaller but the mean test score is higher."
-
-# ╔═╡ 470ef5a6-317c-4337-81c0-ae4ac25171c9
-begin
-
-	scatter(h_loc, scores, label="Mean test score", ylims=(0,6))
-	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
-
-end
-
-# ╔═╡ 07fd86d2-e9c0-422f-ba0f-70f9f2e39f2e
+# ╔═╡ a09b104d-1630-4ca3-bede-e54c28329371
 begin
 	scatter(h_loc, sizes, label="House sizes")
 	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
-
 end
 
-# ╔═╡ 4255bc9b-5d87-4a8c-b595-addea72f5b67
+# ╔═╡ 05718828-b86e-4a11-82c1-bb2e62ea409f
 md" Sort the agents into two groups of 5 households, A and B. Households in A care about size a lot and school quality a little, and households in B care about school quality a lot and size a little. Let preferences be given by the indirect utility function
 
-``` math
+```math
 
 V^{i}_{h} = \delta_{h} + \lambda^{i}_{h} + \epsilon^{i}_{h}
 ```
@@ -227,10 +98,10 @@ is a portion that **varies by individuals** but is **common across all houses**.
 
 " 
 
-# ╔═╡ a96d68de-86c8-4b35-b5cb-428bea86f6f3
+# ╔═╡ 8a7201a2-5fe6-4fe6-9eef-007a49b16831
 md"Set the parameters in the utility function below"
 
-# ╔═╡ 211b9ebd-79cb-4233-af3e-8123ac34e350
+# ╔═╡ a9e1285d-2606-4c2a-81ea-aa63d1f712a9
 begin
 	a_size_slide = @bind a_size Slider(0:0.1:2.0, 0.3, true)
 	a_score_slide = @bind a_score Slider(0.0:0.1:2.0, 0.3, true)
@@ -243,10 +114,10 @@ begin
 
 end
 
-# ╔═╡ 6508d24c-5b14-428b-b722-7035f15d2e16
+# ╔═╡ c86faca9-c85e-4630-9594-7c4514bcfcda
 md" To complete this simple version of the model, we need to simulate one unobserved utility shock **per choice of house per individual** from the type-1 extreme value distribution. Here is the example of the shocks for agent 1."
 
-# ╔═╡ 40c3ac93-8118-46da-beca-6fb8e145117c
+# ╔═╡ 33cef7be-fe6e-403b-b111-eda5d85cd1eb
 begin
 
 	# building array for computation of indirect utilities
@@ -291,11 +162,10 @@ begin
 end
 
 
-
-# ╔═╡ 3f07028a-1b3e-49ab-8d81-ab338d2f96fb
+# ╔═╡ 719eff29-ab68-4adc-9858-ce164e0bd4a8
 md" With these in hand, we can generate the utilities of each option for each household. Here, we plot these, first with shocks and second without shocks."
 
-# ╔═╡ 3a1b807f-e1d5-463a-bbd2-7bc3fb4bce4c
+# ╔═╡ 63645a2b-7283-4b5b-9d7b-b687af0fd011
 begin
 
 	scatter(agent[1:50], house[1:50], utilities_no_shocks[1:50], label="Type As, not including shocks", camera=(80, 15), color=:red)
@@ -304,7 +174,7 @@ begin
 	zlabel!("Utilities")
 end
 
-# ╔═╡ cb0df518-231b-4248-9997-a48735f75356
+# ╔═╡ 9524442d-050a-4abd-991e-dadeede34369
 begin
 
 	# seems to be an error here in how it is matching characteristics...
@@ -315,10 +185,10 @@ begin
 	zlabel!("Utilities")
 end
 
-# ╔═╡ 0c53f15a-3b4a-4acb-bec5-7e5274acb850
+# ╔═╡ 080670ff-2789-45b0-b455-3712d7c4a9c2
 md" We see that type As prefer the second set of houses, and type Bs prefer the first set. Now we add some random utility shocks and plot the utilities together."
 
-# ╔═╡ 070245cc-830e-4efc-9cb9-5bbe7e93d59f
+# ╔═╡ 74cfa591-72e3-4771-896a-4fef96354fc2
 begin
 
 	scatter(agent[1:50], house[1:50], utilities[1:50], label="Type A, including shocks", color=:red, camera=(80, 15))
@@ -328,234 +198,51 @@ begin
 	zlabel!("Utilities")
 end
 
-# ╔═╡ 1560aaf1-06f0-411d-93ff-ad83f5c82b7c
+# ╔═╡ e2d152bf-45ac-4b76-a22c-99cca4fda0c7
 md" If we assign houses to the individual who prefers them the most, we will see that **most of the houses in neighbourhood** 1 go to the **type Bs**, and **most of the houses in neighbourhood 2** go to the **type As**. So there is **sorting of individuals into neighbourhoods**!"
 
-# ╔═╡ 10006368-5d9c-4b9d-b790-8721d1b0f11a
-md" ## Simultaneity of prices and unobservables"
+# ╔═╡ f7f1ebfe-3ea2-44ca-b7b6-33853e1a5029
+md" Notice that we **do not need boundary discontinuities to generate sorting**. We just need **differences in mean charracteristics across neighbourhoods**, combined with **different preferences over neighbourhoods**. For example, if we let school score vary smoothly over space (a bit unrealistic, but stick with it)"
 
-# ╔═╡ 955e506c-3630-4060-bb56-cf1c8fb3eb14
-md" Next, we might want to introduce prices and unobserved characteristics (or 'taste-shifters') into our sorting model. After all, prices are one thing we consider when we choose a house! Our issue is that the taste-shifter and house price might both be determined by common unobservables. Thus, because we cannot explicitly include the taste shifter in our model, we will have omitted variable bias when we estimate the parameter on prices. For example, imagine people like green space so that the 'true hedonic price function' is 
-
-```math
-
-p_{h} = \beta_{\text{score}}\text{score}_{h} + \beta_{\text{size}}\text{size}_{h} + \beta_{\text{green}}\text{green}_{h} + \beta_{p}\text{local\_prices}_{h}
-```
-
-and our house-level taste-shifter depends on green space
-
-```math
-\zeta_{h} = \gamma_{\text{green}}\text{green}_{h} + \eta_{h},
-```
-
-where $\eta_{h} \sim N(0,1)$.
-
-
-To see the problem, lets simulate prices and taste shifters for our ten houses from the data generating process above and compute the correlation.
-
-" 
-
-# ╔═╡ c4a32e92-574f-4cde-b7ef-17459d05faad
+# ╔═╡ 616571b8-7797-4642-a352-c2f00a7a507f
 begin
 
-	beta_score = 0.1
-	beta_size = 0.1
-	beta_green = 0.5
-	beta_price = 0.2
-	gamma_green = 0.5
+	#s_dist = Normal(0,0.25)
+	#size_shock = rand(rng, s_dist, 10)
 
-	local_prices = [4,4,4,4,4,2,2,2,2,2]
-	green = 4 .* h_loc
+	#sizes = 4 .* h_loc .+ size_shock 
 
-	prices = beta_score .* scores .+ beta_size .* sizes .+ beta_green .* green + beta_price .* local_prices
+	new_scores = 6 .- 6 .* h_loc
+	#scores[h_loc .< 0.5] .= 5
 
-	taste_shock_dist = Normal()
-	taste_shocks = rand(rng, taste_shock_dist, 10)
-	zetas = gamma_green .* green .+ taste_shocks
+    #a_0_price = 2
+	#delta_size = 0.5	
 
-	scatter(zetas, prices, label="")
-	xlabel!("Uobservable taste shifter")
-	ylabel!("House prices")
+	new_ln_price = a_0_price .+ delta_score .* new_scores .+ delta_size .* sizes
 
+    scatter(h_loc, new_scores, label="New test scores", ylims=(0,6))
+	vline!([0.5], label="Neighbourhood boundary", color=:red, lwd=10)
 
 end
 
-# ╔═╡ e5fb740a-6d9b-44f5-a3a2-c59b1cb7a44a
-Print("Correlation between taste shifters and house prices is: " * string(cor(zetas, prices)))
+# ╔═╡ 8d26c375-9f8c-4f86-b58b-a813749a0309
+md" and re-compute the exact same utilities as above, we see that we still get preferencees that will generate sorting."
 
-# ╔═╡ 4735dbdf-ffa4-4ed8-a58f-a8e6a91a4bcd
-md" Then we need to instrument the price term, again as we saw in the econometrics refresher. As they suggest in the paper, we can use some other price variables in the city that are far enough away that they will only affect the price of this house through changing equilibrium in the housing market. If we instrument prices with local prices in the example above and compute the correlation with the latent taste shifters, we see that the problem goes away."
-
-# ╔═╡ f6713dcc-71ba-4a69-ac11-d39c7a35c4a8
+# ╔═╡ e4065205-acbc-4deb-880e-5be3a8edbd5e
 begin
 
-   beta_price_hat =  (local_prices' * local_prices)^-1 * local_prices' * prices
-   instrumented_prices = local_prices .* beta_price_hat
+	new_score = repeat(new_scores, outer=10)
+	new_data_mat = [agent house new_score house_size type_A_dum type_B_dum eps_1]
 
-	Print("Correlation between taste shifters and instrumented house prices is: " * string(cor(zetas, instrumented_prices)))
-end
-	
+	new_utilities = a_size .* new_data_mat[:,4] .+ a_score .* new_data_mat[:,3] .+ a_A .* new_data_mat[:,5] .* new_data_mat[:,4] .+ a_B .* new_data_mat[:,6] .* new_data_mat[:,3] .+ eps_1
 
-
-# ╔═╡ c32251a0-e88c-467f-87db-ee7a4b50b9df
-md" ### Full model - combining the above"
-
-# ╔═╡ 91e48160-1026-46a4-ae3f-59c9d551c467
-md" Now lets combine all elements into a simple version of the sorting model in Bayer et al. There are two neighbourhoods, neighbourhood 1 which runs from $(0, 0.5)$ and neighbourhood 2, which runs from $[0.5, 1)$. Assume house unobservables vary by neighbourhood, as do house prices. House prices also depend on some price shifter that is independent of the neighbourhood indicator (in the paper, this is prices 3 miles away)."
-
-
-# ╔═╡ 2cfca24e-f190-4b40-b90d-e43ae6225eac
-md" First, we need to specify the indirect utility function **over locations**
-
-``` math
-
-V^{i}_{l} = \delta_{l} + \lambda^{i}_{l} + \epsilon^{i}_{l}
-```
-
-where 
-
-```math
-
-\delta_{l} = \alpha_{0x}X_{l} - \alpha_{0p}p_{l} + \theta_{bl} + \xi_{l}
-```
-
-is a portion that **varies by location** but is **common across all individuals**, and
-
-```math
-\lambda^{i}_{l} = (\sum_{k=1}^{K} \alpha_{kl}z^{i}_{k})X_{l} - (\sum_{k=1}^{K} \alpha_{kp}z^{i}_{k})p_{l} - (\sum_{k=1}^{K} \alpha_{kp}z^{i}_{k})d_{l}.
-```
-
-is a portion that **varies by individuals**.
-
-To illustrate how this model works, lets again simulate a simple example with two neighbourhoods and 1000 households."
-
-
-# ╔═╡ 17af65ee-769d-4873-aac4-5e73b8d53aa1
-begin
-	size1_slide = @bind X1 Slider(0:0.1:5.0, 1.0, true)
-	size2_slide = @bind X2 Slider(0.0:0.1:5.0, 5.0, true)
-	test1_slide = @bind test1 Slider(0.0:0.1:10.0, 10.0, true)
-	test2_slide = @bind test2 Slider(0.0:0.1:10.0, 1.0, true)
-	p1_slide = @bind p1 Slider(0.0:0.1:1.0, 1.0, true)
-	p2_slide = @bind p2 Slider(0.0:0.1:1.0, 1.0, true)
-    d1_slide = @bind d1 Slider(0.0:0.1:1.0, 0.0, true)
-	d2_slide = @bind d2 Slider(0.0:0.1:1.0, 0.0, true)
-	md"size1: $(size1_slide) \
-	size2: $(size2_slide) \
-	test1: $(test1_slide) \
-	test2: $(test2_slide) \
-	p1: $(p1_slide) \
-	p2: $(p2_slide) \
-	d1: $(d1_slide) \
-	d2: $(d2_slide)"
+	scatter(agent[1:50], house[1:50], new_utilities[1:50], label="Type A, smooth scores", color=:red, camera=(80, 15))
+	scatter!(agent[51:100], house[51:100], new_utilities[51:100], label="Type B, smooth scores", color=:blue)
+	xlabel!("Household")
+	ylabel!("House")
+	zlabel!("Utilities")
 
 end
-
-# ╔═╡ 0835362b-dcbd-41b3-9e3e-b307259e06a2
-md" Next, we need to sort individuals into types. Lets sort them into two types, 1 and 2. We need to select the coefficients for both for each of our two characteristics."
-
-# ╔═╡ 914afaa6-2427-422e-9d8e-7a684ac718c6
-begin
-	n1_slide = @bind n1 Slider(0:1.0:1000.0, 500.0, true)
-	a0_size_slide = @bind a0_size Slider(0:0.1:2.0, 0.2, true)
-	a1_size_slide = @bind a1_size Slider(0:0.1:2.0, 0.1, true)
-	a2_size_slide = @bind a2_size Slider(0:0.1:2.0, 0.9, true)
-	a0_test_slide = @bind a0_test Slider(0:0.1:2.0, 0.2, true)
-	a1_test_slide = @bind a1_test Slider(0:0.1:2.0, 0.9, true)
-	a2_test_slide = @bind a2_test Slider(0:0.1:2.0, 0.1, true)
-	a0_p_slide = @bind a0_p Slider(0:0.1:2.0, 0.2, true)
-	a1_p_slide = @bind a1_p Slider(0:0.1:2.0, 0.2, true)
-	a2_p_slide = @bind a2_p Slider(0:0.1:2.0, 0.2, true)
-	a0_d_slide = @bind a0_d Slider(0:0.1:2.0, 0.2, true)
-	a1_d_slide = @bind a1_d Slider(0:0.1:2.0, 0.2, true)
-	a2_d_slide = @bind a2_d Slider(0:0.1:2.0, 0.2, true)
-	md"num 1: $(n1_slide) \
-	a0size: $(a0_size_slide) \
-	a1size: $(a1_size_slide) \
-	a2size: $(a2_size_slide) \
-	a0test: $(a0_test_slide) \
-	a1test: $(a1_test_slide) \
-	a2test: $(a2_test_slide) \
-	a0p: $(a0_p_slide) \
-	a1p: $(a1_p_slide) \
-	a2p: $(a2_p_slide) \
-	a0d: $(a0_d_slide) \
-	a1d: $(a1_d_slide) \
-	a2d: $(a2_d_slide)"
-end
-
-# ╔═╡ 392b3f0c-d8ec-425f-97be-c4c86c8aac56
-md" With these, we can generate the common components of the utilities by location."
-
-# ╔═╡ 30e94de7-705b-43b1-8f8a-6a19312fe3b4
-begin
-
-	delta_1 = a0_size .* X1 .+ a0_test .* test1 .- a0_p .* p1
-	delta_2 = a0_size .* X2 .+ a0_test .* test2 .- a0_p .* p2
-
-	Print("Common utility of location 1 is "  * string(delta_1) * ", and common utility of location 2 is " * string(delta_2) *",")
-
-end
-
-# ╔═╡ dc49fc84-45c4-482d-979a-10a1dd08eb29
-md" and the portion that varies by type"
-
-# ╔═╡ 2d34ac84-af8f-4133-ab52-1cae4a19b426
-begin
-
-	lambda_11 = a1_size .* X1 .+ a1_test .* test1 - a1_p .* p1 - a1_d .* d1  # type 1 location 1
-	lambda_12 = a1_size .* X2 .+ a1_test .* test2 - a1_p .* p2 - a1_d .* d2 # type 1 location 2
-
-	lambda_21 = a2_size .* X1 .+ a2_test .* test1 - a2_p .* p1 - a2_d .* d1 # type 2 location 1
-	lambda_22 = a2_size .* X2 .+ a2_test .* test2 - a2_p .* p2 - a2_d .* d2 # type 2 location 2
-		
-	Print("Individual utilities are: type 1, location 1: "  * string(lambda_11) * "; type 1, location 2:" * string(lambda_12) * "; type 2, location 1:" * string(lambda_21) * "; type 2, location 2:" * string(lambda_21) * ".")
-
-end
-
-# ╔═╡ 9b7a7b80-ccdd-4909-b100-f3aba3f40216
-md" With these, we can draw location-specific unobserved utility shocks by individual."
-
-# ╔═╡ cb9cda3f-0d66-430e-88c0-8752557f924d
-begin
-
-	eps_dist = Gumbel(0, 0.25)
-	eps_loc_1 = rand(rng, eps_dist, 1000)
-	eps_loc_2 = rand(rng, eps_dist, 1000)
-
-	#zeta_ind = zeros(1000)
-	#zeta_ind[h_loc .> 0.5] .= 1
-
-	scatter(eps_loc_1, eps_loc_2, label="Random utility shocks")
-	xlabel!("Neighbourhood 1")
-	ylabel!("Neighbourhood 2")
-
-end
-
-# ╔═╡ c2a268a8-cabb-405b-bae0-8f44e3bb0492
-md" Now, we can generate the indirect utility for each location for each individual."
-
-# ╔═╡ 457e31d5-d581-42a7-8722-f588a352d9d9
-begin
-
-	V_11 = delta_1 .+ lambda_11 .+ eps_loc_1[1:Int64(n1)] # individuals of type 1
-	V_12 = delta_2 .+ lambda_12 .+ eps_loc_2[1:Int64(n1)]
-
-	V_21 = delta_1 .+ lambda_21 .+ eps_loc_1[Int64(n1+1):end] # individuals of type 2
-	V_22 = delta_2 .+ lambda_22 .+ eps_loc_2[Int64(n1+1):end]
-
-	scatter([1:Int64(n1)], V_11, color=:green2, label="House in neighbourhood 1", ylims=(0,20))
-	scatter!([1:Int64(n1)], V_12, color=:pink, label="House in neighbourhood 2")
-	scatter!([Int64(n1 + 1):1000], V_21, color=:green2, label="")
-	scatter!([Int64(n1 + 1):1000], V_22, color=:pink, label="")
-	vline!([n1], label="Type 1s to left")
-	xlabel!("Individual")
-	ylabel!("Utility")
-
-end
-
-# ╔═╡ ac48beea-f1d8-4ac1-b2fd-64d020749749
-md" The vertical line breaks individuals into type 1 and type 2. We see that the different types have very different utilities by neighbourhood. This generates the sorting we want!"
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
@@ -1689,63 +1376,28 @@ version = "1.4.1+0"
 
 # ╔═╡ Cell order:
 # ╟─f5450eab-0f9f-4b7f-9b80-992d3c553ba9
-# ╟─29f29120-998b-11ed-1a33-4568dfd71ac1
-# ╠═a58a0206-9de2-4351-9396-5533ec7486bf
-# ╟─89069f95-c70b-4add-8fac-083c60bb03cf
-# ╟─ef65527d-0ba3-40e6-aae0-0f761c9bd800
-# ╟─d7a73788-994a-432d-a022-2fc26dcbf534
-# ╟─7054a01e-dcac-4036-85dd-fef6178c071f
-# ╟─0a6d4439-2109-4add-9386-4ad376f75510
-# ╟─0f9fded5-f50c-4231-a49b-4aec3631ae90
-# ╟─5921bc78-7c18-46e5-a93a-55b24f3d5672
-# ╟─99363bf0-673d-4829-a8f1-b48c6c7bef7e
-# ╟─e6eab0d0-bd2e-4fde-bf09-4e248e82fca5
-# ╟─28781c2f-2894-40d2-b863-69112b7b6141
-# ╟─878e7dbd-1c3f-4477-ae65-79f04361c062
-# ╟─bad7564a-4fd6-4223-b021-b1906c5feddc
-# ╟─ab68c928-5aad-447b-a4f7-04020355f304
-# ╟─cd7632be-ac94-4604-822b-4309ebb6afb7
-# ╟─e93867f5-c2b4-4f81-a3c8-76f0c9a3f3dd
-# ╟─a193d4a5-bc43-480d-ad42-d07254776690
-# ╟─b7135550-9504-4deb-b876-ab7653bfc140
-# ╟─7c61a350-8a9c-4cfc-bd31-52653aa12ee0
-# ╟─41c08ea2-e0eb-426b-a2a9-ef9716efece7
-# ╟─30651f0f-fc94-454e-9b24-dc13fb6bb212
-# ╟─2da940ce-bae2-49d3-a60e-c762452ee106
-# ╟─774d82a4-6a21-4ac4-8119-4f25b3678e3d
-# ╟─470ef5a6-317c-4337-81c0-ae4ac25171c9
-# ╟─07fd86d2-e9c0-422f-ba0f-70f9f2e39f2e
-# ╟─4255bc9b-5d87-4a8c-b595-addea72f5b67
-# ╟─a96d68de-86c8-4b35-b5cb-428bea86f6f3
-# ╟─211b9ebd-79cb-4233-af3e-8123ac34e350
-# ╟─6508d24c-5b14-428b-b722-7035f15d2e16
-# ╟─40c3ac93-8118-46da-beca-6fb8e145117c
-# ╟─3f07028a-1b3e-49ab-8d81-ab338d2f96fb
-# ╟─3a1b807f-e1d5-463a-bbd2-7bc3fb4bce4c
-# ╟─cb0df518-231b-4248-9997-a48735f75356
-# ╟─0c53f15a-3b4a-4acb-bec5-7e5274acb850
-# ╟─070245cc-830e-4efc-9cb9-5bbe7e93d59f
-# ╟─1560aaf1-06f0-411d-93ff-ad83f5c82b7c
-# ╟─10006368-5d9c-4b9d-b790-8721d1b0f11a
-# ╟─955e506c-3630-4060-bb56-cf1c8fb3eb14
-# ╟─c4a32e92-574f-4cde-b7ef-17459d05faad
-# ╟─e5fb740a-6d9b-44f5-a3a2-c59b1cb7a44a
-# ╟─4735dbdf-ffa4-4ed8-a58f-a8e6a91a4bcd
-# ╟─f6713dcc-71ba-4a69-ac11-d39c7a35c4a8
-# ╟─c32251a0-e88c-467f-87db-ee7a4b50b9df
-# ╟─91e48160-1026-46a4-ae3f-59c9d551c467
-# ╟─2cfca24e-f190-4b40-b90d-e43ae6225eac
-# ╟─17af65ee-769d-4873-aac4-5e73b8d53aa1
-# ╟─0835362b-dcbd-41b3-9e3e-b307259e06a2
-# ╟─914afaa6-2427-422e-9d8e-7a684ac718c6
-# ╟─392b3f0c-d8ec-425f-97be-c4c86c8aac56
-# ╟─30e94de7-705b-43b1-8f8a-6a19312fe3b4
-# ╟─dc49fc84-45c4-482d-979a-10a1dd08eb29
-# ╟─2d34ac84-af8f-4133-ab52-1cae4a19b426
-# ╟─9b7a7b80-ccdd-4909-b100-f3aba3f40216
-# ╟─cb9cda3f-0d66-430e-88c0-8752557f924d
-# ╟─c2a268a8-cabb-405b-bae0-8f44e3bb0492
-# ╟─457e31d5-d581-42a7-8722-f588a352d9d9
-# ╟─ac48beea-f1d8-4ac1-b2fd-64d020749749
+# ╠═edcbe54e-96cb-405e-9ada-6140df4ec029
+# ╠═9544ec67-4a1f-4dd9-a1d6-f5eff8d60ae9
+# ╟─ea1a3b39-c045-44c7-a788-b294e7f99af6
+# ╟─72d012c2-b1dc-435b-9275-ed72de71a992
+# ╟─e0cebbb5-09fa-4964-8537-bc29167aca6e
+# ╟─dcf44570-7bdd-4162-9930-81bb26f1f32b
+# ╟─e0f03f0a-45d1-4b84-ad3b-0c289ed3d803
+# ╟─a09b104d-1630-4ca3-bede-e54c28329371
+# ╟─05718828-b86e-4a11-82c1-bb2e62ea409f
+# ╟─8a7201a2-5fe6-4fe6-9eef-007a49b16831
+# ╟─a9e1285d-2606-4c2a-81ea-aa63d1f712a9
+# ╟─c86faca9-c85e-4630-9594-7c4514bcfcda
+# ╠═33cef7be-fe6e-403b-b111-eda5d85cd1eb
+# ╟─719eff29-ab68-4adc-9858-ce164e0bd4a8
+# ╠═63645a2b-7283-4b5b-9d7b-b687af0fd011
+# ╠═9524442d-050a-4abd-991e-dadeede34369
+# ╟─080670ff-2789-45b0-b455-3712d7c4a9c2
+# ╟─74cfa591-72e3-4771-896a-4fef96354fc2
+# ╟─e2d152bf-45ac-4b76-a22c-99cca4fda0c7
+# ╟─f7f1ebfe-3ea2-44ca-b7b6-33853e1a5029
+# ╟─616571b8-7797-4642-a352-c2f00a7a507f
+# ╟─8d26c375-9f8c-4f86-b58b-a813749a0309
+# ╟─e4065205-acbc-4deb-880e-5be3a8edbd5e
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
