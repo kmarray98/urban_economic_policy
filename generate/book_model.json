@@ -13,7 +13,13 @@
                 "notebook_path": "notebooks/0_metrics.jl",
                 "video_id": "",
                 "preview_image_url": ""
-            }
+            }, 
+	   {
+                "name": "Non-parametrics",
+                "notebook_path": "notebooks/0_nonparametrics.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            }, 
         ]
     },
 	
