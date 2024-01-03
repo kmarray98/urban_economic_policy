@@ -40,6 +40,18 @@
             }
         ]
     },	
+
+    {
+        "title": "Place-based policy",
+        "contents": [
+            {
+                "name": "Rossi-Hanberg model",
+                "notebook_path": "notebooks/3_Rossi_Hanberg.jl",
+                "video_id": "",
+                "preview_image_url": ""
+            }
+        ]
+    },	
 	
     {
         "title": "Sorting models",
